@@ -1,0 +1,53 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+logoFile="icon.png"
+description='''
+Salt and black pepper as food seasonings, both obtained through processes that loosely mirror real life.
+
+Grow pepper vines on jungle logs, blanch the green peppercorns in a cauldron over a fire, dry them in a
+furnace and grind them into ground pepper. Mine rock salt ore and smelt it into salt. Season any food
+from any mod for a small nutrition and saturation bonus.
+'''
+
+# NeoForge
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    versionRange="[${neo_version},)"
+    ordering="NONE"
+    side="BOTH"
+
+# Minecraft
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# Farmer's Delight - optional. Provides alternative cooking pot / cutting board recipes.
+# Loaded AFTER us is wrong: we must load AFTER them so their recipe types and item tags exist
+# by the time our conditional recipes are parsed.
+[[dependencies.${mod_id}]]
+    modId="farmersdelight"
+    type="optional"
+    reason="Adds cooking pot and cutting board alternatives to the pepper processing chain."
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+# Salt: Renewed - optional. If present, our own salt content disables itself and theirs
+# drives our seasoning system instead. See SaltCompat.
+[[dependencies.${mod_id}]]
+    modId="salt"
+    type="optional"
+    reason="If present, this mod's own salt ore, items and recipes disable themselves to avoid duplication."
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"

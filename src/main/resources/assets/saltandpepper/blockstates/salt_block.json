@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "saltandpepper:block/salt_block"
+    }
+  }
+}

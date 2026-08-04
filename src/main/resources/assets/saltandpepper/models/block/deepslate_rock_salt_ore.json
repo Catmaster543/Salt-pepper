@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "saltandpepper:block/deepslate_rock_salt_ore"
+  }
+}

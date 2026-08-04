@@ -1,0 +1,37 @@
+{
+  "parent": "saltandpepper:root",
+  "display": {
+    "icon": {
+      "count": 1,
+      "id": "saltandpepper:ground_pepper"
+    },
+    "title": {
+      "translate": "advancements.saltandpepper.ground_pepper.title"
+    },
+    "description": {
+      "translate": "advancements.saltandpepper.ground_pepper.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "has_ground_pepper": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "saltandpepper:ground_pepper"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_ground_pepper"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

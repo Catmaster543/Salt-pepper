@@ -1,0 +1,46 @@
+{
+  "itemGroup.saltandpepper.main": "Salt & Pepper",
+
+  "block.saltandpepper.pepper_vine": "Pepper Vine",
+  "block.saltandpepper.rock_salt_ore": "Rock Salt Ore",
+  "block.saltandpepper.deepslate_rock_salt_ore": "Deepslate Rock Salt Ore",
+  "block.saltandpepper.salt_block": "Block of Salt",
+
+  "item.saltandpepper.pepper_seeds": "Pepper Seeds",
+  "item.saltandpepper.green_peppercorns": "Green Peppercorns",
+  "item.saltandpepper.blanched_peppercorns": "Blanched Peppercorns",
+  "item.saltandpepper.black_peppercorns": "Black Peppercorns",
+  "item.saltandpepper.ground_pepper": "Ground Pepper",
+  "item.saltandpepper.raw_rock_salt": "Raw Rock Salt",
+  "item.saltandpepper.salt": "Salt",
+
+  "tooltip.saltandpepper.seasoned": "Seasoned: %s",
+  "seasoning.saltandpepper.salt": "Salt",
+  "seasoning.saltandpepper.pepper": "Pepper",
+
+  "advancements.saltandpepper.root.title": "Salt & Pepper",
+  "advancements.saltandpepper.root.description": "Season your food",
+  "advancements.saltandpepper.ground_pepper.title": "Freshly Ground",
+  "advancements.saltandpepper.ground_pepper.description": "Blanch, dry and grind peppercorns into ground pepper",
+  "advancements.saltandpepper.salt.title": "Worth Your Salt",
+  "advancements.saltandpepper.salt.description": "Smelt raw rock salt into salt",
+
+  "saltandpepper.configuration.title": "Salt & Pepper",
+  "saltandpepper.configuration.section.saltandpepper.common.toml": "Common Settings",
+  "saltandpepper.configuration.section.saltandpepper.common.toml.title": "Salt & Pepper Common Settings",
+
+  "saltandpepper.configuration.seasoning": "Seasoning",
+  "saltandpepper.configuration.seasoning.title": "Seasoning",
+  "saltandpepper.configuration.maxNutrition": "Max Nutrition",
+  "saltandpepper.configuration.pepper": "Pepper",
+  "saltandpepper.configuration.pepper.title": "Pepper",
+  "saltandpepper.configuration.salt": "Salt",
+  "saltandpepper.configuration.salt.title": "Salt",
+  "saltandpepper.configuration.bonusNutrition": "Bonus Nutrition",
+  "saltandpepper.configuration.bonusSaturationModifier": "Bonus Saturation Modifier",
+  "saltandpepper.configuration.enableSalt": "Enable Salt Content",
+  "saltandpepper.configuration.pepper_vine": "Pepper Vine",
+  "saltandpepper.configuration.pepper_vine.title": "Pepper Vine",
+  "saltandpepper.configuration.restrictGrowthToJungle": "Restrict Growth To Jungle",
+  "saltandpepper.configuration.blanchBatchSize": "Blanch Batch Size"
+}

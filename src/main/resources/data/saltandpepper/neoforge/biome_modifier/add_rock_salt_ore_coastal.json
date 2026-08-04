@@ -1,0 +1,15 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": {
+    "type": "neoforge:or",
+    "values": [
+      "#c:is_beach",
+      "#c:is_ocean",
+      "#minecraft:is_beach",
+      "#minecraft:is_ocean",
+      "minecraft:dripstone_caves"
+    ]
+  },
+  "features": "saltandpepper:ore_rock_salt_coastal",
+  "step": "underground_ores"
+}

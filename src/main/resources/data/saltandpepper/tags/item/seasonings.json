@@ -1,0 +1,10 @@
+{
+  "values": [
+    "saltandpepper:ground_pepper",
+    "saltandpepper:salt",
+    {
+      "id": "salt:salt",
+      "required": false
+    }
+  ]
+}
