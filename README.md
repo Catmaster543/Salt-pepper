@@ -122,7 +122,48 @@ renamed.
 > already is. One nutrition point is half a hunger shank; salt + pepper together give +2 nutrition.
 
 Because this is a `CustomRecipe`, it will **not** appear in JEI/EMI. Advancements for first
-obtaining `ground_pepper` and `salt` ship as a nudge instead.
+obtaining `ground_pepper`, `salt` and a filled shaker ship as a nudge instead.
+
+### Shakers
+
+Two portable seasoning containers that season a **whole stack in one right-click**, no crafting
+table involved. Both are `stacksTo(1)` and hold a fill level in a `saltandpepper:shaker_uses`
+component — deliberately *not* vanilla durability, so they are never enchantable, never repairable
+on an anvil, and are never destroyed.
+
+```
+iron_nugget
+   over          shaped  ->  empty_shaker         (stacks to 64, no fill level)
+glass
+                 + 8 salt          ->  salt_shaker     at 64 uses
+                 + 8 ground_pepper ->  pepper_shaker   at 64 uses
+```
+
+8 seasoning items for 64 uses is an 8x efficiency gain over seasoning by hand. That is intentional —
+the per-food bonus is small and the shaker's value is convenience.
+
+**The interaction.** Pick a shaker up onto the cursor and right-click a slot, or leave it in a slot
+and right-click it holding something. Both directions work, via the vanilla `Item` hooks
+`overrideStackedOnOther` and `overrideOtherStackedOnMe` (the same pair vanilla bundles use).
+
+| Other stack | Result |
+|---|---|
+| This shaker's seasoning | Refill: consumes `ceil(missing / usesPerRefillItem)` items, capped by what is there |
+| A seasonable food | Seasons the **whole stack** and spends one use per item |
+| Anything else | Falls through to normal vanilla click behaviour |
+
+An `empty_shaker` right-clicked onto a pile of salt or ground pepper fills it the same way. At zero
+uses a shaker turns back into an `empty_shaker` in place.
+
+**All or nothing.** If a shaker has fewer uses left than the stack has items, nothing happens: a dull
+click plays and an action bar line says how many were needed. Partially seasoning would mean
+splitting the stack and finding a home for the unseasoned remainder while the cursor is occupied,
+i.e. inventory insertion or item drops inside a handler that runs on both the client and the server.
+All-or-nothing is deterministic, leaves no remainder, and has no desync surface. Split the stack
+yourself for a partial batch.
+
+Both the shaker and the crafting recipe route through `SeasoningHelper`, so the two paths cannot
+drift apart — a food seasonable by hand is always seasonable by shaker, with identical results.
 
 ### Config — `saltandpepper-common.toml`
 
@@ -134,6 +175,8 @@ obtaining `ground_pepper` and `salt` ship as a nudge instead.
 | `salt.bonusNutrition` | `1` | Nutrition added by salt |
 | `salt.bonusSaturationModifier` | `0.2` | Saturation modifier added by salt |
 | `salt.enableSalt` | `true` | Master switch for this mod's salt content |
+| `shaker.shakerCapacity` | `64` | How many foods a full shaker can season |
+| `shaker.usesPerRefillItem` | `8` | Uses added per seasoning item when filling or refilling |
 | `pepper_vine.restrictGrowthToJungle` | `false` | When true, vines only advance age in jungle biomes |
 | `pepper_vine.blanchBatchSize` | `8` | Max peppercorns converted per cauldron interaction |
 

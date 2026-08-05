@@ -26,6 +26,11 @@ public final class Config {
     public static final ModConfigSpec.IntValue SALT_BONUS_NUTRITION;
     public static final ModConfigSpec.DoubleValue SALT_BONUS_SATURATION_MODIFIER;
 
+    // -- Shakers --------------------------------------------------------------------------------
+
+    public static final ModConfigSpec.IntValue SHAKER_CAPACITY;
+    public static final ModConfigSpec.IntValue USES_PER_REFILL_ITEM;
+
     // -- Pepper ---------------------------------------------------------------------------------
 
     public static final ModConfigSpec.BooleanValue RESTRICT_GROWTH_TO_JUNGLE;
@@ -75,6 +80,22 @@ public final class Config {
                 .comment("Whether this mod's own salt ore, items and recipes are enabled.",
                          "Forced off at runtime if Salt: Renewed (mod id 'salt') is installed, so the two do not duplicate each other.")
                 .define("enableSalt", true);
+
+        BUILDER.pop();
+
+        BUILDER.comment("Salt and pepper shakers.",
+                        "One use seasons one food item, so a full shaker seasons a full stack of 64.",
+                        "The default 8 seasoning items per 64 uses is an 8x efficiency gain over seasoning",
+                        "by hand at a crafting table - the shaker's value is convenience, not power.")
+                .push("shaker");
+
+        SHAKER_CAPACITY = BUILDER
+                .comment("How many foods a full shaker can season.")
+                .defineInRange("shakerCapacity", 64, 1, 1024);
+
+        USES_PER_REFILL_ITEM = BUILDER
+                .comment("Uses added per seasoning item consumed when filling or refilling a shaker.")
+                .defineInRange("usesPerRefillItem", 8, 1, 1024);
 
         BUILDER.pop();
 

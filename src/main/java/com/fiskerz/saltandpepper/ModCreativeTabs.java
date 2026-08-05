@@ -33,6 +33,10 @@ public final class ModCreativeTabs {
                             output.accept(ModItems.SALT.get());
                             output.accept(ModItems.SALT_BLOCK.get());
                         }
+
+                        output.accept(ModItems.EMPTY_SHAKER.get());
+                        output.accept(ModItems.SALT_SHAKER.get());
+                        output.accept(ModItems.PEPPER_SHAKER.get());
                     })
                     .build());
 }

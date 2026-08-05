@@ -20,6 +20,13 @@ Everything lives under `src/main/resources/assets/saltandpepper/textures/`.
 | `ground_pepper.png` | Seasoning | A pinch or small pile of dark powder. Must be instantly distinguishable from whole peppercorns in a hotbar. |
 | `raw_rock_salt.png` | Ore drop | Chunky, irregular off-white/grey mineral lumps. Should read as *unrefined* — rough, dirty, rock-like. |
 | `salt.png` | Seasoning | Fine white crystals. Same silhouette family as `ground_pepper` so the pair reads as a matched set. |
+| `empty_shaker.png` | Portable container | Clear glass body with a metal cap, visibly empty. Should read as "container", not "item". |
+| `salt_shaker.png` | Filled with salt | Same silhouette, white contents visible through the glass. |
+| `pepper_shaker.png` | Filled with pepper | Same silhouette, dark contents. |
+
+**The three shakers must share one silhouette.** Only the contents change between them — that is what
+makes them read as a family and makes the fill state legible at a glance in a hotbar. Draw the glass
+and cap once and reuse it for all three.
 
 ## Blocks — `textures/block/`
 
@@ -81,7 +88,10 @@ src/main/resources/
         │   ├── black_peppercorns.png
         │   ├── ground_pepper.png
         │   ├── raw_rock_salt.png
-        │   └── salt.png
+        │   ├── salt.png
+        │   ├── empty_shaker.png
+        │   ├── salt_shaker.png
+        │   └── pepper_shaker.png
         └── block/
             ├── pepper_vine_stage0.png
             ├── pepper_vine_stage1.png
@@ -91,7 +101,7 @@ src/main/resources/
             └── salt_block.png
 ```
 
-**Total for v1: 13 textures at 16×16, plus one mod icon.**
+**Total: 16 textures at 16×16, plus one mod icon.** (13 for v1, plus the three shakers.)
 
 ---
 

@@ -24,7 +24,7 @@ public final class SeasoningTooltipHandler {
 
     @SubscribeEvent
     public static void onItemTooltip(ItemTooltipEvent event) {
-        List<ResourceLocation> seasonings = SeasoningRecipe.getSeasonings(event.getItemStack());
+        List<ResourceLocation> seasonings = SeasoningHelper.getSeasonings(event.getItemStack());
         if (seasonings.isEmpty()) {
             return;
         }

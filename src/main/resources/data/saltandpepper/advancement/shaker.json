@@ -1,0 +1,40 @@
+{
+  "parent": "saltandpepper:ground_pepper",
+  "display": {
+    "icon": {
+      "count": 1,
+      "id": "saltandpepper:pepper_shaker"
+    },
+    "title": {
+      "translate": "advancements.saltandpepper.shaker.title"
+    },
+    "description": {
+      "translate": "advancements.saltandpepper.shaker.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "has_shaker": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "saltandpepper:salt_shaker",
+              "saltandpepper:pepper_shaker"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_shaker"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

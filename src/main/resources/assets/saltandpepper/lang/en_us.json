@@ -13,10 +13,16 @@
   "item.saltandpepper.ground_pepper": "Ground Pepper",
   "item.saltandpepper.raw_rock_salt": "Raw Rock Salt",
   "item.saltandpepper.salt": "Salt",
+  "item.saltandpepper.empty_shaker": "Empty Shaker",
+  "item.saltandpepper.salt_shaker": "Salt Shaker",
+  "item.saltandpepper.pepper_shaker": "Pepper Shaker",
 
   "tooltip.saltandpepper.seasoned": "Seasoned: %s",
+  "tooltip.saltandpepper.shaker_uses": "%s / %s",
   "seasoning.saltandpepper.salt": "Salt",
   "seasoning.saltandpepper.pepper": "Pepper",
+
+  "message.saltandpepper.shaker_insufficient": "Not enough %s — needs %s, has %s",
 
   "advancements.saltandpepper.root.title": "Salt & Pepper",
   "advancements.saltandpepper.root.description": "Season your food",
@@ -24,6 +30,8 @@
   "advancements.saltandpepper.ground_pepper.description": "Blanch, dry and grind peppercorns into ground pepper",
   "advancements.saltandpepper.salt.title": "Worth Your Salt",
   "advancements.saltandpepper.salt.description": "Smelt raw rock salt into salt",
+  "advancements.saltandpepper.shaker.title": "Shake It Off",
+  "advancements.saltandpepper.shaker.description": "Fill a shaker and season a whole stack at once",
 
   "saltandpepper.configuration.title": "Salt & Pepper",
   "saltandpepper.configuration.section.saltandpepper.common.toml": "Common Settings",
@@ -39,6 +47,10 @@
   "saltandpepper.configuration.bonusNutrition": "Bonus Nutrition",
   "saltandpepper.configuration.bonusSaturationModifier": "Bonus Saturation Modifier",
   "saltandpepper.configuration.enableSalt": "Enable Salt Content",
+  "saltandpepper.configuration.shaker": "Shakers",
+  "saltandpepper.configuration.shaker.title": "Shakers",
+  "saltandpepper.configuration.shakerCapacity": "Shaker Capacity",
+  "saltandpepper.configuration.usesPerRefillItem": "Uses Per Refill Item",
   "saltandpepper.configuration.pepper_vine": "Pepper Vine",
   "saltandpepper.configuration.pepper_vine.title": "Pepper Vine",
   "saltandpepper.configuration.restrictGrowthToJungle": "Restrict Growth To Jungle",

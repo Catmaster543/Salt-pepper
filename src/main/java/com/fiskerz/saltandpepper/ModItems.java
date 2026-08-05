@@ -30,6 +30,28 @@ public final class ModItems {
     public static final DeferredItem<Item> RAW_ROCK_SALT = ITEMS.registerSimpleItem("raw_rock_salt");
     public static final DeferredItem<Item> SALT = ITEMS.registerSimpleItem("salt");
 
+    // -- Shakers --------------------------------------------------------------------------------
+
+    /** Near-white, to read as salt through the glass. */
+    private static final int SALT_BAR_COLOR = 0xF2F0EB;
+    /** Dark grey-brown, to read as ground pepper. */
+    private static final int PEPPER_BAR_COLOR = 0x4A3B2F;
+
+    public static final DeferredItem<EmptyShakerItem> EMPTY_SHAKER = ITEMS.registerItem("empty_shaker",
+            EmptyShakerItem::new);
+
+    /**
+     * Filled shakers are {@code stacksTo(1)} because they carry a per-stack fill level, and are
+     * deliberately kept out of every {@code #minecraft:enchantable/*} tag. Together with storing fill
+     * in {@code saltandpepper:shaker_uses} instead of vanilla durability, that keeps Mending,
+     * Unbreaking and anvil repair off the table entirely.
+     */
+    public static final DeferredItem<ShakerItem> SALT_SHAKER = ITEMS.registerItem("salt_shaker",
+            props -> new ShakerItem(props.stacksTo(1), SALT, "seasoning.saltandpepper.salt", SALT_BAR_COLOR));
+
+    public static final DeferredItem<ShakerItem> PEPPER_SHAKER = ITEMS.registerItem("pepper_shaker",
+            props -> new ShakerItem(props.stacksTo(1), GROUND_PEPPER, "seasoning.saltandpepper.pepper", PEPPER_BAR_COLOR));
+
     // -- Block items ----------------------------------------------------------------------------
 
     public static final DeferredItem<BlockItem> ROCK_SALT_ORE = ITEMS.registerSimpleBlockItem(ModBlocks.ROCK_SALT_ORE);
