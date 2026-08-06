@@ -38,7 +38,7 @@ public class WildPepperVineFeature extends Feature<NoneFeatureConfiguration> {
     /** How far below the origin to scan. Comfortably covers a jungle trunk from canopy to root. */
     private static final int SCAN_BELOW = 32;
     private static final int COLUMN_ATTEMPTS = 10;
-    private static final int MAX_VINES_PER_PLACEMENT = 1;
+    private static final int MAX_VINES_PER_PLACEMENT = 2;
 
     public WildPepperVineFeature(Codec<NoneFeatureConfiguration> codec) {
         super(codec);
