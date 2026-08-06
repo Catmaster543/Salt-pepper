@@ -3,10 +3,13 @@
 	"id": "saltandpepper",
 	"version": "${version}",
 	"name": "Salt & Pepper",
-	"description": "Salt and black pepper as food seasonings, both obtained through processes that loosely mirror real life.\\n\\nGrow pepper vines on jungle logs, blanch the green peppercorns in a cauldron over a fire, dry them in a furnace and grind them into ground pepper. Mine rock salt ore and smelt it into salt. Season any food from any mod for a small nutrition and saturation bonus.",
+	"description": "Adds salt and pepper to enhance the taste of your food just a tiny bit. Now to fabric as well.",
 	"license": "MIT",
 	"icon": "icon.png",
 	"environment": "*",
+	"authors": [
+		"Fiskerz"
+	],
 	"entrypoints": {
 		"main": [
 			"com.fiskerz.saltandpepper.SaltandPepper"
