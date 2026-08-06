@@ -1,6 +1,6 @@
 package com.fiskerz.saltandpepper;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
@@ -41,7 +41,7 @@ public class SeasoningRecipe extends CustomRecipe {
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return ModRecipes.SEASONING_SERIALIZER.get();
+        return ModRecipes.SEASONING_SERIALIZER;
     }
 
     // getType() is deliberately not overridden: CraftingRecipe supplies RecipeType.CRAFTING, which is

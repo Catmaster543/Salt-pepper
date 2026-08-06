@@ -1,15 +1,21 @@
 package com.fiskerz.saltandpepper;
 
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemNameBlockItem;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModItems {
     private ModItems() {}
 
-    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(SaltandPepper.MODID);
+    /**
+     * Ids of the two seasoning items, as constants rather than registry lookups. These are the values
+     * stored in the {@code saltandpepper:seasonings} component, so they are part of the save format.
+     */
+    public static final ResourceLocation GROUND_PEPPER_ID = SaltandPepper.id("ground_pepper");
+    public static final ResourceLocation SALT_ID = SaltandPepper.id("salt");
 
     // -- Pepper chain ---------------------------------------------------------------------------
 
@@ -17,18 +23,18 @@ public final class ModItems {
      * Places the pepper vine. An {@link ItemNameBlockItem} so the item keeps its own translation key
      * instead of inheriting the block's, exactly like vanilla cocoa beans.
      */
-    public static final DeferredItem<ItemNameBlockItem> PEPPER_SEEDS = ITEMS.registerItem("pepper_seeds",
-            props -> new ItemNameBlockItem(ModBlocks.PEPPER_VINE.get(), props));
+    public static final ItemNameBlockItem PEPPER_SEEDS = register("pepper_seeds",
+            new ItemNameBlockItem(ModBlocks.PEPPER_VINE, new Item.Properties()));
 
-    public static final DeferredItem<Item> GREEN_PEPPERCORNS = ITEMS.registerSimpleItem("green_peppercorns");
-    public static final DeferredItem<Item> BLANCHED_PEPPERCORNS = ITEMS.registerSimpleItem("blanched_peppercorns");
-    public static final DeferredItem<Item> BLACK_PEPPERCORNS = ITEMS.registerSimpleItem("black_peppercorns");
-    public static final DeferredItem<Item> GROUND_PEPPER = ITEMS.registerSimpleItem("ground_pepper");
+    public static final Item GREEN_PEPPERCORNS = register("green_peppercorns", new Item(new Item.Properties()));
+    public static final Item BLANCHED_PEPPERCORNS = register("blanched_peppercorns", new Item(new Item.Properties()));
+    public static final Item BLACK_PEPPERCORNS = register("black_peppercorns", new Item(new Item.Properties()));
+    public static final Item GROUND_PEPPER = register("ground_pepper", new Item(new Item.Properties()));
 
     // -- Salt chain -----------------------------------------------------------------------------
 
-    public static final DeferredItem<Item> RAW_ROCK_SALT = ITEMS.registerSimpleItem("raw_rock_salt");
-    public static final DeferredItem<Item> SALT = ITEMS.registerSimpleItem("salt");
+    public static final Item RAW_ROCK_SALT = register("raw_rock_salt", new Item(new Item.Properties()));
+    public static final Item SALT = register("salt", new Item(new Item.Properties()));
 
     // -- Shakers --------------------------------------------------------------------------------
 
@@ -37,8 +43,8 @@ public final class ModItems {
     /** Dark grey-brown, to read as ground pepper. */
     private static final int PEPPER_BAR_COLOR = 0x4A3B2F;
 
-    public static final DeferredItem<EmptyShakerItem> EMPTY_SHAKER = ITEMS.registerItem("empty_shaker",
-            EmptyShakerItem::new);
+    public static final EmptyShakerItem EMPTY_SHAKER = register("empty_shaker",
+            new EmptyShakerItem(new Item.Properties()));
 
     /**
      * Filled shakers are {@code stacksTo(1)} because they carry a per-stack fill level, and are
@@ -46,15 +52,34 @@ public final class ModItems {
      * in {@code saltandpepper:shaker_uses} instead of vanilla durability, that keeps Mending,
      * Unbreaking and anvil repair off the table entirely.
      */
-    public static final DeferredItem<ShakerItem> SALT_SHAKER = ITEMS.registerItem("salt_shaker",
-            props -> new ShakerItem(props.stacksTo(1), SALT, "seasoning.saltandpepper.salt", SALT_BAR_COLOR));
+    public static final ShakerItem SALT_SHAKER = register("salt_shaker",
+            new ShakerItem(new Item.Properties().stacksTo(1), () -> SALT, "seasoning.saltandpepper.salt", SALT_BAR_COLOR));
 
-    public static final DeferredItem<ShakerItem> PEPPER_SHAKER = ITEMS.registerItem("pepper_shaker",
-            props -> new ShakerItem(props.stacksTo(1), GROUND_PEPPER, "seasoning.saltandpepper.pepper", PEPPER_BAR_COLOR));
+    public static final ShakerItem PEPPER_SHAKER = register("pepper_shaker",
+            new ShakerItem(new Item.Properties().stacksTo(1), () -> GROUND_PEPPER, "seasoning.saltandpepper.pepper", PEPPER_BAR_COLOR));
 
     // -- Block items ----------------------------------------------------------------------------
 
-    public static final DeferredItem<BlockItem> ROCK_SALT_ORE = ITEMS.registerSimpleBlockItem(ModBlocks.ROCK_SALT_ORE);
-    public static final DeferredItem<BlockItem> DEEPSLATE_ROCK_SALT_ORE = ITEMS.registerSimpleBlockItem(ModBlocks.DEEPSLATE_ROCK_SALT_ORE);
-    public static final DeferredItem<BlockItem> SALT_BLOCK = ITEMS.registerSimpleBlockItem(ModBlocks.SALT_BLOCK);
+    public static final BlockItem ROCK_SALT_ORE = register("rock_salt_ore",
+            new BlockItem(ModBlocks.ROCK_SALT_ORE, new Item.Properties()));
+    public static final BlockItem DEEPSLATE_ROCK_SALT_ORE = register("deepslate_rock_salt_ore",
+            new BlockItem(ModBlocks.DEEPSLATE_ROCK_SALT_ORE, new Item.Properties()));
+    public static final BlockItem SALT_BLOCK = register("salt_block",
+            new BlockItem(ModBlocks.SALT_BLOCK, new Item.Properties()));
+
+    /**
+     * NeoForge replaces {@code Item.BY_BLOCK} with its own registry-backed map, so block items map back
+     * to their block automatically. Vanilla's map is a plain {@link java.util.HashMap} that
+     * {@code Items} populates by hand, so a block item registered outside that class has to do the same
+     * or pick-block and {@code Block#asItem} return air.
+     */
+    private static <T extends Item> T register(String name, T item) {
+        if (item instanceof BlockItem blockItem) {
+            blockItem.registerBlocks(Item.BY_BLOCK, item);
+        }
+        return Registry.register(BuiltInRegistries.ITEM, SaltandPepper.id(name), item);
+    }
+
+    /** Forces class initialisation, which is what actually performs the registrations above. */
+    static void init() {}
 }
