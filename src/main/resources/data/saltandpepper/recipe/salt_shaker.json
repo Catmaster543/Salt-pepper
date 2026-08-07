@@ -3,33 +3,15 @@
   "category": "misc",
   "group": "shaker_filling",
   "ingredients": [
-    {
-      "item": "saltandpepper:empty_shaker"
-    },
-    {
-      "item": "saltandpepper:salt"
-    },
-    {
-      "item": "saltandpepper:salt"
-    },
-    {
-      "item": "saltandpepper:salt"
-    },
-    {
-      "item": "saltandpepper:salt"
-    },
-    {
-      "item": "saltandpepper:salt"
-    },
-    {
-      "item": "saltandpepper:salt"
-    },
-    {
-      "item": "saltandpepper:salt"
-    },
-    {
-      "item": "saltandpepper:salt"
-    }
+    "saltandpepper:empty_shaker",
+    "saltandpepper:salt",
+    "saltandpepper:salt",
+    "saltandpepper:salt",
+    "saltandpepper:salt",
+    "saltandpepper:salt",
+    "saltandpepper:salt",
+    "saltandpepper:salt",
+    "saltandpepper:salt"
   ],
   "result": {
     "id": "saltandpepper:salt_shaker",

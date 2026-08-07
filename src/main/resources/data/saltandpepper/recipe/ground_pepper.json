@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "ground_pepper",
   "ingredients": [
-    {
-      "item": "saltandpepper:black_peppercorns"
-    }
+    "saltandpepper:black_peppercorns"
   ],
   "result": {
     "id": "saltandpepper:ground_pepper",

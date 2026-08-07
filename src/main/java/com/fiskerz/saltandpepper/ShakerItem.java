@@ -1,6 +1,6 @@
 package com.fiskerz.saltandpepper;
 
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -19,6 +19,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 /**
  * A portable seasoning container. Pick it up onto the cursor, right-click a stack of food anywhere in
@@ -136,7 +137,7 @@ public class ShakerItem extends Item {
         }
 
         // (B) The slot holds a seasonable food - season the whole stack, or refuse it outright.
-        ResourceLocation seasoningId = seasoningId();
+        Identifier seasoningId = seasoningId();
         if (SeasoningHelper.canSeason(target, seasoningId)) {
             int count = target.getCount();
             int uses = getUses(stack);
@@ -181,7 +182,7 @@ public class ShakerItem extends Item {
         }
 
         // (B) The cursor holds a seasonable food.
-        ResourceLocation seasoningId = seasoningId();
+        Identifier seasoningId = seasoningId();
         if (SeasoningHelper.canSeason(other, seasoningId)) {
             int count = other.getCount();
             int uses = getUses(stack);
@@ -216,7 +217,7 @@ public class ShakerItem extends Item {
         return stack.is(this.seasoning.get());
     }
 
-    private ResourceLocation seasoningId() {
+    private Identifier seasoningId() {
         return BuiltInRegistries.ITEM.getKey(this.seasoning.get());
     }
 
@@ -257,7 +258,8 @@ public class ShakerItem extends Item {
     private void reportInsufficient(Player player, int needed, int available) {
         playFailure(player);
         if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.displayClientMessage(Component.translatable(
+            // 26.1: displayClientMessage(component, actionBar) is now sendSystemMessage(component, overlay).
+            serverPlayer.sendSystemMessage(Component.translatable(
                     "message.saltandpepper.shaker_insufficient",
                     Component.translatable(this.seasoningNameKey),
                     needed,
@@ -283,9 +285,11 @@ public class ShakerItem extends Item {
         return this.barColor;
     }
 
+    /** 26.1 added the {@code TooltipDisplay} parameter and swapped the list for a {@code Consumer}. */
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.translatable("tooltip.saltandpepper.shaker_uses", getUses(stack), capacity())
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
+            Consumer<Component> builder, TooltipFlag tooltipFlag) {
+        builder.accept(Component.translatable("tooltip.saltandpepper.shaker_uses", getUses(stack), capacity())
                 .withStyle(ChatFormatting.GRAY));
     }
 }

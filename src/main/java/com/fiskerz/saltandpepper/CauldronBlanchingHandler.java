@@ -59,10 +59,12 @@ public final class CauldronBlanchingHandler {
         }
 
         // Consume the interaction on both sides so the arm swings client-side and nothing else fires.
+        // 26.1 removed InteractionResult.sidedSuccess; SUCCESS is the sealed-interface constant that
+        // swings the arm client-side, matching what vanilla block interactions now return.
         event.setCanceled(true);
-        event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide));
+        event.setCancellationResult(InteractionResult.SUCCESS);
 
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return;
         }
 
@@ -79,7 +81,7 @@ public final class CauldronBlanchingHandler {
         // Uses one level of water; reverts to an empty cauldron at level 0.
         LayeredCauldronBlock.lowerFillLevel(cauldron, level, pos);
 
-        level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.6F, 1.6F + level.random.nextFloat() * 0.4F);
+        level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.6F, 1.6F + level.getRandom().nextFloat() * 0.4F);
         if (level instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.CLOUD,
                     pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,

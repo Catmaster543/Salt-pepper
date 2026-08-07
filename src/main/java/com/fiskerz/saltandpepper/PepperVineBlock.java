@@ -17,8 +17,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
@@ -107,11 +107,20 @@ public class PepperVineBlock extends HorizontalDirectionalBlock implements Bonem
         return null;
     }
 
+    /** 26.1 reshaped {@code updateShape}; parameter order copied from vanilla {@code CocoaBlock}. */
     @Override
-    protected BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor level, BlockPos currentPos, BlockPos facingPos) {
-        return facing == state.getValue(FACING) && !state.canSurvive(level, currentPos)
+    protected BlockState updateShape(
+            BlockState state,
+            LevelReader level,
+            ScheduledTickAccess ticks,
+            BlockPos pos,
+            Direction directionToNeighbour,
+            BlockPos neighbourPos,
+            BlockState neighbourState,
+            RandomSource random) {
+        return directionToNeighbour == state.getValue(FACING) && !state.canSurvive(level, pos)
                 ? Blocks.AIR.defaultBlockState()
-                : super.updateShape(state, facing, facingState, level, currentPos, facingPos);
+                : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
     }
 
     @Override
@@ -186,15 +195,17 @@ public class PepperVineBlock extends HorizontalDirectionalBlock implements Bonem
             return super.useWithoutItem(state, level, pos, player, hitResult);
         }
 
-        if (!level.isClientSide) {
-            popResource(level, pos, new ItemStack(ModItems.GREEN_PEPPERCORNS.get(), 2 + level.random.nextInt(2)));
+        if (!level.isClientSide()) {
+            popResource(level, pos, new ItemStack(ModItems.GREEN_PEPPERCORNS.get(), 2 + level.getRandom().nextInt(2)));
             BlockState reset = state.setValue(AGE, 0);
             level.setBlock(pos, reset, Block.UPDATE_CLIENTS);
             level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, reset));
         }
         level.playSound(null, pos, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS,
-                1.0F, 0.8F + level.random.nextFloat() * 0.4F);
+                1.0F, 0.8F + level.getRandom().nextFloat() * 0.4F);
 
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        // 26.1 removed sidedSuccess. Vanilla SweetBerryBushBlock#useWithoutItem - the block this
+        // harvest was modelled on - now simply returns SUCCESS.
+        return InteractionResult.SUCCESS;
     }
 }

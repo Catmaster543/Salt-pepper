@@ -2,7 +2,6 @@ package com.fiskerz.saltandpepper;
 
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemNameBlockItem;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -14,11 +13,16 @@ public final class ModItems {
     // -- Pepper chain ---------------------------------------------------------------------------
 
     /**
-     * Places the pepper vine. An {@link ItemNameBlockItem} so the item keeps its own translation key
-     * instead of inheriting the block's, exactly like vanilla cocoa beans.
+     * Places the pepper vine, keeping its own translation key instead of inheriting the block's,
+     * exactly like vanilla cocoa beans.
+     *
+     * <p>26.1 removed {@code ItemNameBlockItem}. Vanilla now spells this as a plain {@link BlockItem}
+     * whose properties opt into the item description prefix - see {@code Items#COCOA_BEANS}, which is
+     * registered with {@code createBlockItemWithCustomItemName(Blocks.COCOA)}, i.e.
+     * {@code new BlockItem(block, props.useItemDescriptionPrefix())}.
      */
-    public static final DeferredItem<ItemNameBlockItem> PEPPER_SEEDS = ITEMS.registerItem("pepper_seeds",
-            props -> new ItemNameBlockItem(ModBlocks.PEPPER_VINE.get(), props));
+    public static final DeferredItem<BlockItem> PEPPER_SEEDS = ITEMS.registerItem("pepper_seeds",
+            props -> new BlockItem(ModBlocks.PEPPER_VINE.get(), props.useItemDescriptionPrefix()));
 
     public static final DeferredItem<Item> GREEN_PEPPERCORNS = ITEMS.registerSimpleItem("green_peppercorns");
     public static final DeferredItem<Item> BLANCHED_PEPPERCORNS = ITEMS.registerSimpleItem("blanched_peppercorns");

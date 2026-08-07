@@ -9,15 +9,9 @@
   "cookingtime": 200,
   "experience": 0.1,
   "ingredients": [
-    {
-      "item": "saltandpepper:green_peppercorns"
-    },
-    {
-      "item": "saltandpepper:green_peppercorns"
-    },
-    {
-      "item": "saltandpepper:green_peppercorns"
-    }
+    "saltandpepper:green_peppercorns",
+    "saltandpepper:green_peppercorns",
+    "saltandpepper:green_peppercorns"
   ],
   "recipe_book_tab": "misc",
   "result": {

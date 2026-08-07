@@ -11,9 +11,7 @@
   "type": "minecraft:blasting",
   "category": "misc",
   "group": "salt",
-  "ingredient": {
-    "item": "saltandpepper:raw_rock_salt"
-  },
+  "ingredient": "saltandpepper:raw_rock_salt",
   "result": {
     "id": "saltandpepper:salt"
   },

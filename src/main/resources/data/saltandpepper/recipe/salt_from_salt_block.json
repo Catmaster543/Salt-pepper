@@ -11,9 +11,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "saltandpepper:salt_block"
-    }
+    "saltandpepper:salt_block"
   ],
   "result": {
     "id": "saltandpepper:salt",

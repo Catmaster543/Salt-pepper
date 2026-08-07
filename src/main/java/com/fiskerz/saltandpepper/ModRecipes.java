@@ -2,7 +2,6 @@ package com.fiskerz.saltandpepper;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -23,6 +22,7 @@ public final class ModRecipes {
      *
      * <p>So {@code "type": "saltandpepper:seasoning"} in JSON resolves to this serializer.
      */
-    public static final DeferredHolder<RecipeSerializer<?>, SimpleCraftingRecipeSerializer<SeasoningRecipe>> SEASONING_SERIALIZER =
-            RECIPE_SERIALIZERS.register("seasoning", () -> new SimpleCraftingRecipeSerializer<>(SeasoningRecipe::new));
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<SeasoningRecipe>> SEASONING_SERIALIZER =
+            RECIPE_SERIALIZERS.register("seasoning",
+                    () -> new RecipeSerializer<>(SeasoningRecipe.MAP_CODEC, SeasoningRecipe.STREAM_CODEC));
 }

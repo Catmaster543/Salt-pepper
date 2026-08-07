@@ -3,33 +3,15 @@
   "category": "misc",
   "group": "shaker_filling",
   "ingredients": [
-    {
-      "item": "saltandpepper:empty_shaker"
-    },
-    {
-      "item": "saltandpepper:ground_pepper"
-    },
-    {
-      "item": "saltandpepper:ground_pepper"
-    },
-    {
-      "item": "saltandpepper:ground_pepper"
-    },
-    {
-      "item": "saltandpepper:ground_pepper"
-    },
-    {
-      "item": "saltandpepper:ground_pepper"
-    },
-    {
-      "item": "saltandpepper:ground_pepper"
-    },
-    {
-      "item": "saltandpepper:ground_pepper"
-    },
-    {
-      "item": "saltandpepper:ground_pepper"
-    }
+    "saltandpepper:empty_shaker",
+    "saltandpepper:ground_pepper",
+    "saltandpepper:ground_pepper",
+    "saltandpepper:ground_pepper",
+    "saltandpepper:ground_pepper",
+    "saltandpepper:ground_pepper",
+    "saltandpepper:ground_pepper",
+    "saltandpepper:ground_pepper",
+    "saltandpepper:ground_pepper"
   ],
   "result": {
     "id": "saltandpepper:pepper_shaker",

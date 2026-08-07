@@ -2,9 +2,7 @@
   "type": "minecraft:campfire_cooking",
   "category": "food",
   "group": "black_peppercorns",
-  "ingredient": {
-    "item": "saltandpepper:blanched_peppercorns"
-  },
+  "ingredient": "saltandpepper:blanched_peppercorns",
   "result": {
     "id": "saltandpepper:black_peppercorns"
   },

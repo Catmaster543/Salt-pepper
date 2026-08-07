@@ -1,6 +1,6 @@
 package com.fiskerz.saltandpepper;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -22,7 +22,7 @@ public final class ModTags {
         public static final TagKey<Item> SEASONING_BLACKLIST = tag("seasoning_blacklist");
 
         private static TagKey<Item> tag(String name) {
-            return ItemTags.create(ResourceLocation.fromNamespaceAndPath(SaltandPepper.MODID, name));
+            return ItemTags.create(Identifier.fromNamespaceAndPath(SaltandPepper.MODID, name));
         }
     }
 
@@ -35,7 +35,7 @@ public final class ModTags {
         public static final TagKey<Block> PEPPER_VINE_SUPPORTS = tag("pepper_vine_supports");
 
         private static TagKey<Block> tag(String name) {
-            return BlockTags.create(ResourceLocation.fromNamespaceAndPath(SaltandPepper.MODID, name));
+            return BlockTags.create(Identifier.fromNamespaceAndPath(SaltandPepper.MODID, name));
         }
     }
 }

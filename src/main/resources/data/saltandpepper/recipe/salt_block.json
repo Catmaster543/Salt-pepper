@@ -16,9 +16,7 @@
     "SSS"
   ],
   "key": {
-    "S": {
-      "item": "saltandpepper:salt"
-    }
+    "S": "saltandpepper:salt"
   },
   "result": {
     "id": "saltandpepper:salt_block",

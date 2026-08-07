@@ -6,12 +6,8 @@
     "G"
   ],
   "key": {
-    "N": {
-      "item": "minecraft:iron_nugget"
-    },
-    "G": {
-      "item": "minecraft:glass"
-    }
+    "N": "minecraft:iron_nugget",
+    "G": "minecraft:glass"
   },
   "result": {
     "id": "saltandpepper:empty_shaker",

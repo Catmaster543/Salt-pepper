@@ -5,7 +5,7 @@ import java.util.List;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.food.FoodConstants;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
@@ -20,12 +20,17 @@ import net.minecraft.world.item.ItemStack;
  * <p>Rather than shipping a seasoned variant of every food item, seasoning transmutes the food stack
  * in place using data components, so it works with every food from every mod automatically.
  *
- * <p>Note on {@link FoodProperties} in 1.21.1: the record stores <em>absolute</em> saturation, not
- * the saturation modifier that {@code FoodProperties.Builder} accepts. The relationship is
+ * <p>Note on {@link FoodProperties}: the record stores <em>absolute</em> saturation, not the
+ * saturation modifier that {@code FoodProperties.Builder} accepts. The relationship is
  * {@code saturation = nutrition * modifier * 2} ({@link FoodConstants#saturationByModifier}), so to
  * apply a modifier bonus we have to recover the food's existing modifier, add to it, then convert
- * back. The record also has a {@code usingConvertsTo} field on this version (it is not 1.21.2+ only),
- * which is copied through unchanged along with canAlwaysEat, eatSeconds and effects.
+ * back.
+ *
+ * <p>On 26.1 {@code FoodProperties} is {@code (nutrition, saturation, canAlwaysEat)} and nothing else.
+ * Eat duration, animation, sound and consume effects moved to {@code minecraft:consumable}, and the
+ * old {@code usingConvertsTo} moved to {@code minecraft:use_remainder}. On 1.21.1 this method had to
+ * hand-copy those four fields just to rebuild the record; now they live in components we never touch,
+ * so they are preserved by construction rather than by remembering to copy them.
  */
 public final class SeasoningHelper {
     private SeasoningHelper() {}
@@ -48,17 +53,17 @@ public final class SeasoningHelper {
      * The full eligibility test: {@code food} is a seasonable food that has not already had
      * {@code seasoningId} applied to it.
      */
-    public static boolean canSeason(ItemStack food, ResourceLocation seasoningId) {
+    public static boolean canSeason(ItemStack food, Identifier seasoningId) {
         return isSeasonableFood(food) && !getSeasonings(food).contains(seasoningId);
     }
 
     /** The registry id used to identify a seasoning on a seasoned food. */
-    public static ResourceLocation seasoningId(ItemStack seasoning) {
+    public static Identifier seasoningId(ItemStack seasoning) {
         return BuiltInRegistries.ITEM.getKey(seasoning.getItem());
     }
 
     /** The seasonings already applied to a stack, or an empty list. */
-    public static List<ResourceLocation> getSeasonings(ItemStack stack) {
+    public static List<Identifier> getSeasonings(ItemStack stack) {
         return stack.getOrDefault(ModDataComponents.SEASONINGS.get(), List.of());
     }
 
@@ -69,7 +74,7 @@ public final class SeasoningHelper {
      * for having checked {@link #canSeason}; a food without a {@code minecraft:food} component
      * yields {@link ItemStack#EMPTY}.
      */
-    public static ItemStack season(ItemStack food, ResourceLocation seasoningId, int count) {
+    public static ItemStack season(ItemStack food, Identifier seasoningId, int count) {
         ItemStack result = food.copyWithCount(count);
 
         FoodProperties old = food.get(DataComponents.FOOD);
@@ -86,15 +91,14 @@ public final class SeasoningHelper {
         float newModifier = Math.min(oldModifier + bonusModifier, 2.0F);
         float newSaturation = FoodConstants.saturationByModifier(newNutrition, newModifier);
 
+        // Only minecraft:food is rewritten. minecraft:consumable and minecraft:use_remainder carry
+        // everything else about eating this food and are left exactly as they were.
         result.set(DataComponents.FOOD, new FoodProperties(
                 newNutrition,
                 newSaturation,
-                old.canAlwaysEat(),
-                old.eatSeconds(),
-                old.usingConvertsTo(),
-                old.effects()));
+                old.canAlwaysEat()));
 
-        List<ResourceLocation> seasonings = new ArrayList<>(getSeasonings(food));
+        List<Identifier> seasonings = new ArrayList<>(getSeasonings(food));
         seasonings.add(seasoningId);
         result.set(ModDataComponents.SEASONINGS.get(), List.copyOf(seasonings));
 
@@ -112,18 +116,18 @@ public final class SeasoningHelper {
      * misleading result preview in the output slot, or a shaker interaction the server immediately
      * corrects.
      */
-    private static int bonusNutrition(ResourceLocation seasoningId) {
+    private static int bonusNutrition(Identifier seasoningId) {
         return isPepper(seasoningId) ? Config.PEPPER_BONUS_NUTRITION.get() : Config.SALT_BONUS_NUTRITION.get();
     }
 
-    private static float bonusSaturationModifier(ResourceLocation seasoningId) {
+    private static float bonusSaturationModifier(Identifier seasoningId) {
         double bonus = isPepper(seasoningId)
                 ? Config.PEPPER_BONUS_SATURATION_MODIFIER.get()
                 : Config.SALT_BONUS_SATURATION_MODIFIER.get();
         return (float) bonus;
     }
 
-    private static boolean isPepper(ResourceLocation seasoningId) {
+    private static boolean isPepper(Identifier seasoningId) {
         return seasoningId.equals(ModItems.GROUND_PEPPER.getId());
     }
 }

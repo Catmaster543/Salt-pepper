@@ -7,7 +7,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -24,7 +24,7 @@ public final class SeasoningTooltipHandler {
 
     @SubscribeEvent
     public static void onItemTooltip(ItemTooltipEvent event) {
-        List<ResourceLocation> seasonings = SeasoningHelper.getSeasonings(event.getItemStack());
+        List<Identifier> seasonings = SeasoningHelper.getSeasonings(event.getItemStack());
         if (seasonings.isEmpty()) {
             return;
         }
@@ -47,7 +47,7 @@ public final class SeasoningTooltipHandler {
      * anything else added to {@code #saltandpepper:seasonings} may supply
      * {@code seasoning.<namespace>.<path>}, and otherwise falls back to the item's own name.
      */
-    private static Component displayName(ResourceLocation id) {
+    private static Component displayName(Identifier id) {
         if (id.equals(ModItems.GROUND_PEPPER.getId())) {
             return Component.translatable("seasoning.saltandpepper.pepper");
         }
@@ -60,7 +60,9 @@ public final class SeasoningTooltipHandler {
             return Component.translatable(key);
         }
 
-        Item item = BuiltInRegistries.ITEM.get(id);
-        return item.getDescription();
+        // 26.1: Registry#get returns an Optional holder, so the direct lookup is getValue; and
+        // Item#getDescription is gone - it was exactly Component.translatable(getDescriptionId()).
+        Item item = BuiltInRegistries.ITEM.getValue(id);
+        return Component.translatable(item.getDescriptionId());
     }
 }
