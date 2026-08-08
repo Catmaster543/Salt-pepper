@@ -2,6 +2,10 @@
 
 This mod adds **salt** and **pepper** to minecraft, which you can use to improve your food. Applying either salt, pepper or both, improves the saturation values of the food it is applied on. Salt and pepper can be put into shakers.
 
+# Where can I get this mod? ❔❔
+
+I have published the mod to [Curseforge](https://www.curseforge.com/minecraft/mc-mods/salt-pepper), as well as [Modrinth](https://modrinth.com/mod/salt-pepper), thus you can download the project there. If you prefer not to visit the sites you can also download the files here in [Releases](https://github.com/Catmaster543/Salt-pepper/releases), but note that by downloading the mod from Curseforge or Modrinth you support me in the tiniest way opposed to here. So please, preferably use Curseforge or Modrinth.
+
 ***
 
 ## **Shakers**
