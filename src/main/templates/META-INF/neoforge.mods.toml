@@ -17,7 +17,7 @@ Adds salt and pepper to enhance your food just a tiny bit.
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"
-    versionRange="[${neo_version},)"
+    versionRange="${neo_version_range}"
     ordering="NONE"
     side="BOTH"
 
