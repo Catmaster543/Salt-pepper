@@ -12,7 +12,7 @@ import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
  * Placement modifier that drops every position when this mod's salt is disabled - either by config or
  * because Salt: Renewed is installed.
  *
- * <p>This exists because a NeoForge biome modifier cannot cleanly be disabled at runtime: biome
+ * <p>This exists because a biome modification cannot cleanly be retracted at runtime: the modified
  * modifiers are a datapack registry baked into the biome source when the level loads, and there is no
  * supported way to retract one afterwards based on a config value. Putting the guard in the placement
  * chain keeps the ore feature itself vanilla ({@code minecraft:ore}) while still letting the decision
@@ -31,6 +31,6 @@ public class SaltEnabledFilter extends PlacementFilter {
 
     @Override
     public PlacementModifierType<?> type() {
-        return ModWorldgen.SALT_ENABLED_FILTER.get();
+        return ModWorldgen.SALT_ENABLED_FILTER;
     }
 }

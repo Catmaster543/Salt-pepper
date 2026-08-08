@@ -3,7 +3,7 @@ package com.fiskerz.saltandpepper;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import com.mojang.serialization.Codec;
 
@@ -62,7 +62,7 @@ public class WildPepperVineFeature extends Feature<NoneFeatureConfiguration> {
             }
 
             Candidate chosen = candidates.get(random.nextInt(candidates.size()));
-            BlockState vine = ModBlocks.PEPPER_VINE.get().defaultBlockState()
+            BlockState vine = ModBlocks.PEPPER_VINE.defaultBlockState()
                     // FACING points from the vine back at its supporting log, as in CocoaBlock.
                     .setValue(PepperVineBlock.FACING, chosen.faceToLog)
                     .setValue(PepperVineBlock.AGE, PepperVineBlock.MAX_AGE);

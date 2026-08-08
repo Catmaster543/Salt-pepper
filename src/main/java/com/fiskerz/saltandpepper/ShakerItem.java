@@ -3,7 +3,7 @@ package com.fiskerz.saltandpepper;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -65,14 +65,14 @@ public class ShakerItem extends Item {
      * config was lowered) is clamped down rather than left over-full.
      */
     public static int getUses(ItemStack stack) {
-        Integer stored = stack.get(ModDataComponents.SHAKER_USES.get());
+        Integer stored = stack.get(ModDataComponents.SHAKER_USES);
         return stored == null ? capacity() : Mth.clamp(stored, 0, capacity());
     }
 
     /** A new shaker stack holding {@code uses}, clamped to capacity. */
     public static ItemStack filled(ShakerItem shaker, int uses) {
         ItemStack stack = new ItemStack(shaker);
-        stack.set(ModDataComponents.SHAKER_USES.get(), Mth.clamp(uses, 0, capacity()));
+        stack.set(ModDataComponents.SHAKER_USES, Mth.clamp(uses, 0, capacity()));
         return stack;
     }
 
@@ -82,11 +82,11 @@ public class ShakerItem extends Item {
         if (seasoning.isEmpty() || !SeasoningHelper.isSeasoning(seasoning)) {
             return null;
         }
-        if (seasoning.is(ModItems.SALT.get())) {
-            return ModItems.SALT_SHAKER.get();
+        if (seasoning.is(ModItems.SALT)) {
+            return ModItems.SALT_SHAKER;
         }
-        if (seasoning.is(ModItems.GROUND_PEPPER.get())) {
-            return ModItems.PEPPER_SHAKER.get();
+        if (seasoning.is(ModItems.GROUND_PEPPER)) {
+            return ModItems.PEPPER_SHAKER;
         }
         return null;
     }
@@ -130,7 +130,7 @@ public class ShakerItem extends Item {
                 return false; // Already full, or nothing to take.
             }
             slot.setByPlayer(shrunk(target, consumed));
-            stack.set(ModDataComponents.SHAKER_USES.get(),
+            stack.set(ModDataComponents.SHAKER_USES,
                     Math.min(uses + consumed * usesPerRefillItem(), capacity()));
             playRefill(player);
             return true;
@@ -174,7 +174,7 @@ public class ShakerItem extends Item {
                 return false; // Already full, or nothing to take.
             }
             access.set(shrunk(other, consumed));
-            stack.set(ModDataComponents.SHAKER_USES.get(),
+            stack.set(ModDataComponents.SHAKER_USES,
                     Math.min(uses + consumed * usesPerRefillItem(), capacity()));
             slot.setChanged();
             playRefill(player);
@@ -224,18 +224,18 @@ public class ShakerItem extends Item {
     /** Spends uses on the cursor-held shaker, leaving an empty shaker behind at zero. */
     private static void setCarriedUses(Player player, ItemStack shaker, int uses) {
         if (uses <= 0) {
-            player.containerMenu.setCarried(new ItemStack(ModItems.EMPTY_SHAKER.get()));
+            player.containerMenu.setCarried(new ItemStack(ModItems.EMPTY_SHAKER));
         } else {
-            shaker.set(ModDataComponents.SHAKER_USES.get(), uses);
+            shaker.set(ModDataComponents.SHAKER_USES, uses);
         }
     }
 
     /** Spends uses on a shaker sitting in a slot, leaving an empty shaker behind at zero. */
     private static void setSlotUses(Slot slot, ItemStack shaker, int uses) {
         if (uses <= 0) {
-            slot.setByPlayer(new ItemStack(ModItems.EMPTY_SHAKER.get()));
+            slot.setByPlayer(new ItemStack(ModItems.EMPTY_SHAKER));
         } else {
-            shaker.set(ModDataComponents.SHAKER_USES.get(), uses);
+            shaker.set(ModDataComponents.SHAKER_USES, uses);
             slot.setChanged();
         }
     }

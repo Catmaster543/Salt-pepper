@@ -1,35 +1,36 @@
 package com.fiskerz.saltandpepper;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.mojang.logging.LogUtils;
+import net.fabricmc.api.ModInitializer;
+import net.minecraft.resources.Identifier;
 
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-
-@Mod(SaltandPepper.MODID)
-public class SaltandPepper {
+public class SaltandPepper implements ModInitializer {
     public static final String MODID = "saltandpepper";
-    public static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
 
-    public SaltandPepper(IEventBus modEventBus, ModContainer modContainer) {
-        modEventBus.addListener(this::commonSetup);
+    @Override
+    public void onInitialize() {
+        // Config first: creative tab building and worldgen both read it.
+        Config.load();
 
-        ModBlocks.BLOCKS.register(modEventBus);
-        ModItems.ITEMS.register(modEventBus);
-        ModDataComponents.DATA_COMPONENTS.register(modEventBus);
-        ModRecipes.RECIPE_SERIALIZERS.register(modEventBus);
-        ModWorldgen.FEATURES.register(modEventBus);
-        ModWorldgen.PLACEMENT_MODIFIER_TYPES.register(modEventBus);
-        ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
+        // Registration is done in static initialisers, so these calls exist to force class loading in a
+        // deterministic order. Blocks before items, because the block items reference their block.
+        ModBlocks.init();
+        ModItems.init();
+        ModDataComponents.init();
+        ModRecipes.init();
+        ModWorldgen.init();
+        ModCreativeTabs.init();
 
-        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        ModBiomeModifications.register();
+        CauldronBlanchingHandler.register();
+
+        SaltCompat.logIfDisabled();
     }
 
-    private void commonSetup(FMLCommonSetupEvent event) {
-        event.enqueueWork(SaltCompat::logIfDisabled);
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath(MODID, path);
     }
 }

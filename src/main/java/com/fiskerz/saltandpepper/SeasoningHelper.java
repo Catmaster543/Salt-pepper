@@ -64,7 +64,7 @@ public final class SeasoningHelper {
 
     /** The seasonings already applied to a stack, or an empty list. */
     public static List<Identifier> getSeasonings(ItemStack stack) {
-        return stack.getOrDefault(ModDataComponents.SEASONINGS.get(), List.of());
+        return stack.getOrDefault(ModDataComponents.SEASONINGS, List.of());
     }
 
     // -- Application ----------------------------------------------------------------------------
@@ -100,7 +100,7 @@ public final class SeasoningHelper {
 
         List<Identifier> seasonings = new ArrayList<>(getSeasonings(food));
         seasonings.add(seasoningId);
-        result.set(ModDataComponents.SEASONINGS.get(), List.copyOf(seasonings));
+        result.set(ModDataComponents.SEASONINGS, List.copyOf(seasonings));
 
         return result;
     }
@@ -111,7 +111,7 @@ public final class SeasoningHelper {
      * Ground pepper uses the pepper bonuses; everything else in {@code #saltandpepper:seasonings} -
      * our salt, Salt: Renewed's salt, and any seasoning a pack adds to the tag - uses the salt bonuses.
      *
-     * <p>These read the common config, which NeoForge does not sync to clients. The server is
+     * <p>These read the config file, which is not synced to clients. The server is
      * authoritative for the actual craft; a client with a different config file would only ever see a
      * misleading result preview in the output slot, or a shaker interaction the server immediately
      * corrects.
@@ -128,6 +128,6 @@ public final class SeasoningHelper {
     }
 
     private static boolean isPepper(Identifier seasoningId) {
-        return seasoningId.equals(ModItems.GROUND_PEPPER.getId());
+        return seasoningId.equals(ModItems.GROUND_PEPPER_ID);
     }
 }

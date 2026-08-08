@@ -1,7 +1,11 @@
-package com.fiskerz.saltandpepper;
+package com.fiskerz.saltandpepper.client;
 
 import java.util.List;
 
+import com.fiskerz.saltandpepper.ModItems;
+import com.fiskerz.saltandpepper.SeasoningHelper;
+
+import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
@@ -9,22 +13,25 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Appends a single gray italic {@code Seasoned: Salt, Pepper} line to seasoned foods.
  * The item itself is deliberately never renamed.
+ *
+ * <p>NeoForge used {@code ItemTooltipEvent}; the Fabric equivalent is {@link ItemTooltipCallback},
+ * which lives in the client-only half of fabric-item-api-v1 - hence this class living in the client
+ * source set rather than alongside the rest of the mod.
  */
-@EventBusSubscriber(modid = SaltandPepper.MODID, value = Dist.CLIENT)
 public final class SeasoningTooltipHandler {
     private SeasoningTooltipHandler() {}
 
-    @SubscribeEvent
-    public static void onItemTooltip(ItemTooltipEvent event) {
-        List<Identifier> seasonings = SeasoningHelper.getSeasonings(event.getItemStack());
+    public static void register() {
+        ItemTooltipCallback.EVENT.register((stack, context, type, lines) -> appendSeasonings(stack, lines));
+    }
+
+    private static void appendSeasonings(ItemStack stack, List<Component> lines) {
+        List<Identifier> seasonings = SeasoningHelper.getSeasonings(stack);
         if (seasonings.isEmpty()) {
             return;
         }
@@ -37,7 +44,7 @@ public final class SeasoningTooltipHandler {
             names.append(displayName(seasonings.get(i)));
         }
 
-        event.getToolTip().add(Component.translatable("tooltip.saltandpepper.seasoned", names)
+        lines.add(Component.translatable("tooltip.saltandpepper.seasoned", names)
                 .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
     }
 
@@ -48,10 +55,10 @@ public final class SeasoningTooltipHandler {
      * {@code seasoning.<namespace>.<path>}, and otherwise falls back to the item's own name.
      */
     private static Component displayName(Identifier id) {
-        if (id.equals(ModItems.GROUND_PEPPER.getId())) {
+        if (id.equals(ModItems.GROUND_PEPPER_ID)) {
             return Component.translatable("seasoning.saltandpepper.pepper");
         }
-        if (id.equals(ModItems.SALT.getId())) {
+        if (id.equals(ModItems.SALT_ID)) {
             return Component.translatable("seasoning.saltandpepper.salt");
         }
 

@@ -1,8 +1,6 @@
 package com.fiskerz.saltandpepper;
 
-import net.minecraft.resources.Identifier;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ItemTags;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -21,8 +19,10 @@ public final class ModTags {
         /** Foods that must never be seasoned, even if they are in {@link #SEASONABLE}. */
         public static final TagKey<Item> SEASONING_BLACKLIST = tag("seasoning_blacklist");
 
+        // ItemTags#create is a NeoForge helper; vanilla's takes a plain String and assumes the
+        // minecraft namespace, so this builds the TagKey directly. The tag ids are unchanged.
         private static TagKey<Item> tag(String name) {
-            return ItemTags.create(Identifier.fromNamespaceAndPath(SaltandPepper.MODID, name));
+            return TagKey.create(Registries.ITEM, SaltandPepper.id(name));
         }
     }
 
@@ -35,7 +35,7 @@ public final class ModTags {
         public static final TagKey<Block> PEPPER_VINE_SUPPORTS = tag("pepper_vine_supports");
 
         private static TagKey<Block> tag(String name) {
-            return BlockTags.create(Identifier.fromNamespaceAndPath(SaltandPepper.MODID, name));
+            return TagKey.create(Registries.BLOCK, SaltandPepper.id(name));
         }
     }
 }

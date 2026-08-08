@@ -1,9 +1,9 @@
-# PARITY — NeoForge 26.1
+# PARITY — Fabric 26.1
 
 ## How to use this file
 
-Reference build: NeoForge 1.21.1 on `main-neoforge-1.21.1`. Every line below means "behaves the same
-as the reference build," not "works."
+Reference build: **NeoForge 26.1** on `Neoforge-26.1`. Every line below means "behaves the same as the
+reference build," not "works."
 
 **Verification column** — be honest, this is the whole point:
 
@@ -21,23 +21,28 @@ is a bug that ships.
 
 ## Port details
 
-- **Target:** NeoForge 26.1 — Minecraft **26.1.2**
-- **Branch:** `Neoforge-26.1`
-- **Reference commit on main:** `e1f53fb` on `main-neoforge-1.21.1` (there is no bare `main` ref in
-  this repo)
-- **Pinned versions** — all exact, no ranges:
+- **Target:** Fabric, Minecraft **26.1.2** — the Minecraft version is unchanged from the reference
+- **Branch:** `Fabric-26.1`
+- **Reference commit:** `e2fa36d` on `Neoforge-26.1`
+- **Pinned versions:**
 
-  | Component | Pin | Note |
+  | Component | Pin | Source |
   |---|---|---|
-  | NeoForge | `26.1.2.94` | latest stable 26.1.2.x; resolves NeoForm `26.1.2-1` |
-  | Minecraft | `26.1.2` | read from the NeoForge POM, not assumed |
-  | ModDevGradle | `2.0.143` | already above the 2.0.141 floor; unchanged from main |
-  | Gradle | `9.2.1` | already above the 9.1.0 floor; wrapper unchanged from main |
-  | Java toolchain | `25` | raised from 21 |
-  | Parchment | *removed* | obfuscation gone in 26.1, Mojang's own parameter names ship in the sources |
+  | Minecraft | `26.1.2` | **deviates from template** — see below |
+  | Fabric Loader | `0.19.3` | template |
+  | Fabric Loom | `1.17-SNAPSHOT`, plugin id `net.fabricmc.fabric-loom` | template |
+  | Fabric API | `0.155.2+26.1.2` | **deviates from template** — see below |
+  | Gradle | `9.5.1` | template |
+  | Java | `25` | template |
+  | Mappings | **none** | 26.1 is unobfuscated; Yarn is no longer supported and the new Loom plugin does not remap |
+
+  The template pins `minecraft_version=26.1` and `fabric_api_version=0.145.1+26.1`. This mod is on
+  **26.1.2**, and the brief's premise is that the Minecraft version does not change — only the loader.
+  Taking the template's numbers literally would have silently moved the mod from 26.1.2 to 26.1, so
+  both were taken from the matching `+26.1.2` line instead. Everything else is the template's value.
 
 - **Test world seed used for comparisons:** none — no comparative testing was performed, see §11
-- **Completed by / date:** Claude (agent pass), 2026-08-07. **Agent pass only — no human or
+- **Completed by / date:** Claude (agent pass), 2026-08-08. **Agent pass only — no human or
   comparative testing has been done.**
 
 ---
@@ -48,20 +53,21 @@ is a bug that ships.
 |---|---|---|
 | ☑ | Builds without warnings that reference missing resources | A |
 | ☑ | Mod id and namespace are `saltandpepper` | A |
-| ☑ | `git diff main` shows no changes under `textures/` or `lang/` | A |
+| ☑ | `git diff` shows no changes under `textures/` or `lang/` | A |
 | ☑ | Every registry id identical to reference (items, blocks, recipes, tags, advancements) | A |
 | ☑ | Component keys `saltandpepper:seasonings` and `saltandpepper:shaker_uses` unchanged | A |
 | ☑ | All balance numbers identical: seasoning bonuses, shaker capacity, refill cost, ore density settings, drop counts, smelting times | A |
 | ☑ | No Java imports of Farmer's Delight classes anywhere | A |
 
-**Evidence.** `gradlew build` clean. `git diff e1f53fb -- "*/textures/*"` and `-- "*/lang/*"` both
-return empty. Registry-name string literals across all seven registration classes compare `IDENTICAL`
-to the reference. `Config.java` is **byte-identical** to main, which covers every seasoning bonus,
-shaker capacity and refill cost in one stroke. Ore density lives in `worldgen/placed_feature/` and
-drop counts in `loot_table/`, both of which `git diff` shows as untouched. Smelting times are
-`cookingtime` fields inside the recipe files — those files did change (see §10 D3), but the change was
-proven to be *purely* the ingredient-syntax rewrite (see below), so every `cookingtime` and
-`experience` value is preserved. `grep -i "farmersdelight|vectorwing"` over all Java returns nothing.
+**Evidence.** `gradlew build` clean. `git diff Neoforge-26.1 -- "*/textures/*"` and `-- "*/lang/*"`
+both empty. Registry-name string literals across all seven registration classes compare `IDENTICAL`.
+All ten config defaults and ranges compare identical field-by-field. Smelting times, drop counts and
+ore density live in recipe / loot table / placed feature JSON that `git diff` shows as untouched.
+`grep -i "farmersdelight|vectorwing"` over all Java returns nothing.
+
+*Caveat on line 1:* the build is clean, but launching the **dev** client prints
+`Class path entries reference missing files: build\resources\client` — Loom's split source set
+expecting a `src/client/resources` directory this mod has no need for. Absent from the built jar. §10 D7.
 
 ## 2. Content parity
 
@@ -74,24 +80,10 @@ proven to be *purely* the ingredient-syntax rewrite (see below), so every `cooki
 | ☐ | All lang keys resolve; no raw keys visible in-game **[H]** | H |
 | ☐ | All textures and models render correctly, including the three vine stages **[H]** | H |
 
-**On the model check specifically** — this is the condition attached to skipping datagen, so it gets a
-straight answer. I could not open the creative tab; an agent cannot drive the GUI. What I did instead:
-
-1. All 13 `assets/saltandpepper/items/*.json` were **generated from the `models/item/` directory
-   listing**, not typed, and verified 1:1 against it. The format was copied verbatim from vanilla
-   26.1's own `assets/minecraft/items/apple.json`.
-2. I then **deliberately injected two faults** and re-ran the client to find out whether such errors
-   are actually silent, which was the stated worry:
-   - typo'd model path with an illegal character → **caught**, `ClientItemInfoLoader: Couldn't parse
-     item model 'saltandpepper:salt'`
-   - realistic typo, valid path that doesn't exist (`item/slat`) → **caught**, `ModelDiscovery:
-     Missing block model: saltandpepper:item/slat`
-   - **a missing `items/*.json` entirely → NOT caught, completely silent**
-3. The clean run shows neither message for any of our 13 items.
-
-So the typo class is covered by the log, and the silent class is covered by generating the files from
-the directory listing rather than by hand. What remains genuinely unverified is whether each item
-renders the *right* texture — that needs eyes, and the line stays unchecked.
+The client reaches the title screen with no missing-model, missing-texture or item-model parse errors,
+and the built jar carries all 13 `assets/saltandpepper/items/*.json` definitions unchanged from the
+reference. Rendering and tab ordering remain visual checks. Tab **position** is a known deviation
+(§10 D6) even though contents and their order are unchanged.
 
 ## 3. Pepper chain
 
@@ -109,12 +101,10 @@ renders the *right* texture — that needs eyes, and the line stays unchecked.
 | ☐ | Smoker and blast furnace correctly do not dry peppercorns **[H]** | H |
 | ☑ | Grinding yields 2× ground pepper | A |
 
-Drying and grinding are data-driven recipes; both now load (server reports 1526 recipes, up from 1516
-before the syntax fix, i.e. all 10 previously-failing files recovered) and both were proven
-byte-equivalent to main modulo ingredient syntax. `PepperVineBlock` needed three real changes —
-`updateShape`'s new parameter list, `Level#isClientSide`/`#random` becoming accessor-only, and
-`InteractionResult.SUCCESS` — each copied from vanilla `CocoaBlock`/`SweetBerryBushBlock` rather than
-invented, but none of it has been exercised in game.
+Drying and grinding are data-driven recipes, byte-identical to the reference and confirmed loaded.
+The cauldron handler was rewritten from `PlayerInteractEvent.RightClickBlock` to `UseBlockCallback`
+with its conditions transcribed unchanged; it has not been exercised in-game and is the
+highest-value untested item here.
 
 ## 4. Salt chain
 
@@ -126,9 +116,8 @@ invented, but none of it has been exercised in game.
 | ☐ | Silk Touch and Fortune behave identically to the reference **[C]** | C |
 | ☑ | Smelting and blasting both refine raw rock salt | A |
 
-Both ore blocks still omit `requiresCorrectToolForDrops`, and the `#minecraft:mineable/pickaxe` tag
-file is untouched. Loot tables (Silk Touch, Fortune `ore_drops`) are untouched, so the *data* is
-identical — but "behaves identically" is a [C] line and stays unchecked.
+Both ore blocks still omit `requiresCorrectToolForDrops` and the `#minecraft:mineable/pickaxe` tag is
+untouched. Loot tables are untouched, so the data is identical — but "behaves identically" is [C].
 
 ## 5. Worldgen
 
@@ -139,11 +128,24 @@ identical — but "behaves identically" is a [C] line and stays unchecked.
 | ☐ | Modded jungle biomes receive generation (test with any biome mod) **[H]** | H |
 | ☐ | Nothing generates where it shouldn't (no vines outside jungles, no salt in the Nether/End) **[H]** | H |
 
-Unverified, but lower risk than on the Fabric port: every worldgen file — the two configured features,
-the three placed features and the three `neoforge:add_features` biome modifiers — is **untouched**, and
-all of them parsed without error on the dedicated server. `WildPepperVineFeature` and
-`SaltEnabledFilter` compiled without a single change. The `ChunkPos` API did change in 26.1
-(`containing`/`pack`/`unpack`) but this mod never used it.
+**This is the third reimplementation of this mod's biome injection, so it got explicit attention.**
+Everything that determines density was checked mechanically against the reference:
+
+- All five `WildPepperVineFeature` constants identical: `HORIZONTAL_RADIUS=7`, `SCAN_ABOVE=4`,
+  `SCAN_BELOW=32`, `COLUMN_ATTEMPTS=10`, `MAX_VINES_PER_PLACEMENT=2`.
+- All three placed features and both configured features **untouched** — every `count`, height range
+  and placement modifier carries over verbatim, including the `saltandpepper:salt_enabled` filter.
+- Biome targeting maps 1:1: the coastal JSON's five entries (`#c:is_beach`, `#c:is_ocean`,
+  `#minecraft:is_beach`, `#minecraft:is_ocean`, `minecraft:dripstone_caves`) become five or'd
+  `BiomeSelectors`, and the generation steps match (`underground_ores`, `vegetal_decoration`).
+
+A trap worth recording: `git diff main...Fabric-1.21.1` (three-dot, from the merge base) shows
+`MAX_VINES_PER_PLACEMENT` changing 1 → 2 and looks like a Fabric change. It is not — it came from
+commit `e1f53fb` on main and is already present on both sides. The tip-to-tip two-dot diff, which the
+brief specified, correctly omits it. Following the three-dot diff would have double-applied a density
+change.
+
+The inputs are provably identical; **the output is still unverified** and needs a same-seed comparison.
 
 ## 6. Seasoning system
 
@@ -158,14 +160,11 @@ all of them parsed without error on the dedicated server. `WildPepperVineFeature
 | ☑ | Blacklisted items are rejected | A |
 | ☐ | Config values change the bonus as expected **[H]** | H |
 
-The A lines mean "matching logic is unchanged from the reference and the recipe is registered and
-loads", not "observed in game". The eligibility logic in `SeasoningHelper` is untouched apart from the
-`ResourceLocation`→`Identifier` rename.
-
-**The one line to watch is "nutrition and saturation match the reference exactly" [C].** The arithmetic
-is unchanged and `FoodConstants.saturationByModifier` survives 26.1 verbatim
-(`nutrition * modifier * 2.0F`), so the numbers *should* be identical — but the food component was
-split and this is the single most consequential behavioural surface in the port. See §10 D2.
+`SeasoningHelper` and `SeasoningRecipe` changed only in registry accessors and the `Nullable` import.
+The 26.1 food-component work — rewriting only `minecraft:food` as `(nutrition, saturation,
+canAlwaysEat)` and leaving `minecraft:consumable` / `minecraft:use_remainder` alone — carried across
+untouched, as did the `ItemStackTemplate`-era `RecipeSerializer` codec pair. The A lines mean "logic
+identical to the reference and the recipe loads", not "observed in game".
 
 ## 7. Shakers
 
@@ -183,13 +182,9 @@ split and this is the single most consequential behavioural surface in the port.
 | ☐ | Not enchantable at a table or anvil **[H]** | H |
 | ☐ | Works in the survival inventory, a crafting table grid, and a chest GUI **[H]** | H |
 
-Unverified in game — but the feared rework did not happen. `Item#overrideStackedOnOther` and
-`#overrideOtherStackedOnMe` survive 26.1 with **byte-identical signatures**, and vanilla `BundleItem`
-still uses both, so the structural reference the shakers were derived from is intact. What bundles
-*did* change is how they read their contents (`getSelectedItem` now returns an `ItemStackTemplate`),
-which the shakers never used. The only edits to `ShakerItem` were the `Identifier` rename, the
-`appendHoverText` signature (§10 D4) and `sendSystemMessage` (§10 D5). No interaction logic was
-touched.
+Untested in-game, but this subsystem needed the least work of anything: the inventory hooks are
+vanilla `Item` methods, so `ShakerItem` and `EmptyShakerItem` changed only in registry accessors and
+the `Nullable` import. No interaction logic was touched on either the version jump or this loader swap.
 
 ## 8. Robustness
 
@@ -204,13 +199,16 @@ touched.
 | ☐ | No crash when the cauldron empties on the final interaction **[H]** | H |
 | ☐ | World save/reload preserves seasoned foods and shaker fill levels **[H]** | H |
 
-All [H], so all unchecked — but two have strong agent-level evidence worth recording:
+All [H], all unchecked — but two have strong agent-level evidence:
 
-- The dev client reaches the title screen and the dev dedicated server reaches `Done (0.289s)!`, both
+- The dev client reaches the title screen and the dev dedicated server reaches `Done (0.552s)!`, both
   with only this mod present and no errors in either log.
-- **Farmer's Delight absent** behaves correctly: 1526 recipes and 1621 advancements load with zero
-  parse errors and no recipe-type spam. The two `farmersdelight:` recipes are skipped by their
-  `neoforge:mod_loaded` condition before the unknown recipe type is ever dispatched.
+- **Farmer's Delight absent** behaves correctly, and this is the sharpest cross-loader result in the
+  port: the Fabric server loaded **1526 recipes and 1621 advancements — exactly the counts the
+  NeoForge 26.1 reference produces**, measured the same way. That confirms the resource conditions are
+  evaluated in both directions: the four `fabric:not(fabric:all_mods_loaded[salt])` salt recipes
+  loaded, and the two `fabric:all_mods_loaded[farmersdelight]` recipes were excluded. Had
+  `fabric:load_conditions` been ignored as an unknown key, the count would have read 1528.
 
 ## 9. Cross-port consistency
 
@@ -220,74 +218,67 @@ All [H], so all unchecked — but two have strong agent-level evidence worth rec
 | ☐ | A datapack written for the reference build works here unchanged (tag ids stable) **[H]** | H |
 | ☑ | Config keys and defaults match the reference, even if the file format differs | A |
 
-`sync-shared.sh` now exists in the repo; the textures/lang half of the guarantee was additionally
-verified directly with `git diff` and is recorded in §1. Config parity is absolute here — `Config.java`
-is byte-identical to main and the format is still `saltandpepper-common.toml`, because `ModConfigSpec`
-came through 26.1 completely unchanged.
-
-**Caveat on the datapack line:** tag ids are stable, but a third-party datapack that *overrides* one of
-this mod's recipes would need its ingredient syntax updated for 26.1 — that is a vanilla-wide change,
-not something this port introduced.
+Textures/lang verified directly with `git diff` (§1). Config parity: the same ten keys under the same
+five section names, same defaults, same ranges — only the file and format differ (§10 D3).
 
 ## 10. Deviation log
 
 | Deviation | Reason | Permanent? | Player-visible? |
 |---|---|---|---|
-| **D1** — `ItemBlockRenderTypes.setRenderLayer` call for the pepper vine removed | 26.1 deleted the class. Terrain layers are now `ChunkSectionLayer`s assigned automatically from sprite contents, so a texture with transparent texels lands in cutout unasked. Vanilla `CocoaBlock` likewise has no registration any more | Yes | No, if the automatic assignment behaves — **needs the visual check in §11** |
-| **D2** — `SeasoningHelper.season` no longer copies eat-time, effects or `usingConvertsTo` | The food component was split: `FoodProperties` is now `(nutrition, saturation, canAlwaysEat)` and nothing else. Eat duration, animation, sound and consume effects live in `minecraft:consumable`, and `usingConvertsTo` in `minecraft:use_remainder`. We rewrite only `minecraft:food`, so those are preserved by construction instead of by remembering to copy them — strictly safer than the 1.21.1 code | Yes | No — same resulting food behaviour |
-| **D3** — All 13 recipe files rewritten to the new ingredient syntax | 26.1 replaced `{"item": "x"}` / `{"tag": "y"}` with the plain forms `"x"` / `"#y"`. 10 of 11 shipping recipes hard-failed to parse before this. Proven mechanical: every file satisfies `new == transform(main)` where `transform` only rewrites ingredient syntax | Yes | No |
-| **D4** — `ShakerItem.appendHoverText` signature changed | 26.1 added a `TooltipDisplay` parameter and swapped `List<Component>` for `Consumer<Component>` | Yes | No |
-| **D5** — action-bar feedback uses `sendSystemMessage(component, true)` | `ServerPlayer#displayClientMessage` was removed; `sendSystemMessage(Component, boolean overlay)` is the replacement, `overlay = true` being the action bar | Yes | No |
-| **D6** — `pepper_seeds` is a plain `BlockItem` with `useItemDescriptionPrefix()` | `ItemNameBlockItem` was removed. This is exactly how vanilla now registers cocoa beans (`createBlockItemWithCustomItemName`), so the item keeps its own translation key as before | Yes | No |
-| **D7** — `SeasoningRecipe` restructured: no-arg constructor, `MapCodec`/`StreamCodec` pair, no `canCraftInDimensions` | `CustomRecipe` no longer takes a `CraftingBookCategory`, `SimpleCraftingRecipeSerializer` was deleted in favour of a `RecipeSerializer` record, `assemble` lost its `HolderLookup.Provider`, and `canCraftInDimensions` was replaced by the inherited `placementInfo()`. Matching logic itself is unchanged | Yes | No |
-| **D8** — Parchment removed | Obfuscation was removed in 26.1; Mojang's parameter names ship with the sources | Yes | No |
-| **D9** — Farmer's Delight compat recipes ship but are untested | FD's `26.1` branch exists upstream but its newest commit (3 May 2026) is titled "(ERRORS) More fixes...", i.e. active development, not a release. The recipes were migrated to the new ingredient syntax alongside the others and are correctly skipped when FD is absent | No — retest when FD 26.1 releases | Only if FD's schema changed too |
+| **D1** — Pepper vine growth no longer fires a crop-grow event | NeoForge's `CommonHooks.canCropGrow` / `fireCropGrowPost` have no Fabric equivalent. The 1-in-5 pacing is unchanged; what is lost is other mods' ability to veto or accelerate growth | Yes | No — only to other mods |
+| **D2** — No in-game config screen | `IConfigScreenFactory` is NeoForge-only; ModMenu ruled out rather than add a dependency for ten values | Yes | Yes — config edited by hand |
+| **D3** — Config is `config/saltandpepper.json`, not `saltandpepper-common.toml` | Fabric ships no config system, so this is the hand-rolled Gson config carried over from the Fabric 1.21.1 port. Keys, sections, defaults and ranges identical | Yes | Yes — different file and format |
+| **D4** — The `saltandpepper.configuration.*` lang keys are now dead | Follows from D2. Left in `en_us.json` because the lang invariant forbids touching it | Yes | No |
+| **D5** — `#c:foods` membership may differ slightly | Provided by NeoForge on one side and fabric-convention-tags-v2 on the other | Yes | Marginally — edge-case foods |
+| **D6** — Creative tab sits after the vanilla tabs instead of before Spawn Eggs | `CreativeModeTab.Builder.withTabsBefore` is a NeoForge addition, not vanilla; Fabric appends custom tabs with no ordering control. Contents and their order unchanged | Yes | Yes — tab position |
+| **D7** — Dev client logs `Class path entries reference missing files: build\resources\client` | Loom's `splitEnvironmentSourceSets()` expects a `src/client/resources` this mod does not need. Dev only, absent from the jar | No | No |
+| **D8** — Minecraft and Fabric API pinned off-template | Template targets 26.1; this mod is on 26.1.2 and the port must not change the Minecraft version. See Port details | No | No |
 
-**Explicitly not deviations** (both were called out in the brief as things to cover, both turned out to
-be non-issues): the mod contains **no `ChunkPos` usage** anywhere, and it ships **no `pack.mcmeta`**, so
-there was no pack format to bump. For the record, 26.1.2 is resource-pack format 84.0 / data-pack
-format 101.1, and since 1.21.9 a single `pack_format` field is replaced by a `min_format`/`max_format`
-range.
+**Explicitly not deviations.** Two things the 1.21.1 Fabric port needed have simply ceased to exist on
+26.1, on both loaders:
+
+- The pepper vine's cutout render-layer registration. Fabric's `fabric-blockrenderlayer-v1` module is
+  **gone** from 26.1's Fabric API, because terrain layers are now `ChunkSectionLayer`s assigned
+  automatically from sprite contents. The NeoForge 26.1 build had already dropped its equivalent
+  `ItemBlockRenderTypes` call for the same reason. Nothing to port.
+- Farmer's Delight is **not** absent: FD Refabricated has a `fabric/latest/26.1` branch, so the two
+  compat recipes ship, migrated to Fabric's condition syntax. They remain untested (§11).
 
 ## 11. Known-unverified
 
-1. **Everything marked [H] or [C] above.** No human play-testing, no comparative same-seed run. Agent
-   pass only.
-2. **The creative-tab visual check (§2).** The condition attached to skipping datagen. I could not
-   drive the GUI. Partial automated cover is described in §2 — importantly, a *missing* item
-   definition is silent in the log, which is why the files were generated from the directory listing
-   rather than typed. Whether each item shows the *correct* texture is still unverified.
-3. **D1 — the vine's cutout layer.** The highest-value single visual check in this port. The symptom if
-   the automatic assignment is wrong is opaque black or white squares around the pod's transparent
-   pixels. Two seconds to confirm in game; unverified here.
-4. **§6 [C] — seasoned food nutrition/saturation versus the reference.** The arithmetic and the vanilla
-   helper are unchanged, but this is the subsystem most affected by the food component split and it
-   deserves a side-by-side number check.
-5. **The shaker interaction has not been clicked once**, and the cauldron interaction has not been
-   triggered once. Both compile and both had their changed lines copied from current vanilla usage.
-6. **Farmer's Delight present** (§8) — not installed; see D9.
-7. **Salt: Renewed on 26.1** — unknown whether a build exists.
-8. **Modded-food seasoning** (§6) — no second food mod installed.
-9. **`build/libs` also contains stale `saltandpepper-fabric-1.2.1.jar` and
-   `saltandpepper-neoforge-1.2.1.jar`** left over from other branches' builds. They are gitignored
-   build output, not artifacts of this port; `gradlew clean` clears them.
-10. **Environment note, not a port issue:** this machine runs Avast Web/Mail Shield TLS interception and
-    its CA is absent from the JDK truststore, so every Java-side download fails with a PKIX error unless
-    the JVM is pointed at the Windows root store
-    (`JAVA_TOOL_OPTIONS=-Djavax.net.ssl.trustStoreType=Windows-ROOT`). Deliberately **not** committed —
-    a fresh clone on this machine will hit it.
-11. **`port-kit/neoforge-26.1-template/` was missing**, so the build-tool versions were sourced from the
-    NeoForge 26.1 release notes and the NeoForge Maven repository instead of the MDK. All pins are
-    recorded in "Port details" above; they should be diffed against the real MDK if it turns up.
+1. **Everything marked [H] or [C].** No human play-testing, no comparative same-seed run. Agent pass only.
+2. **Worldgen output (§5).** Density inputs are mechanically identical to the reference, but nothing
+   was observed generating. This needs the same-seed comparison against the NeoForge 26.1 build.
+3. **The cauldron interaction (§3) has never been triggered.** It is the only handler genuinely
+   rewritten in this port. One judgement call inside it is unverified: 1.21.1's
+   `sidedSuccess(true/false)` was mapped to `InteractionResult.SUCCESS` on the client and `CONSUME` on
+   the server, matching what `sidedSuccess` used to return (`SwingSource.CLIENT` / `NONE`). If the arm
+   double-swings or fails to swing, that mapping is where to look.
+4. **The shaker interaction has not been clicked once** (§7).
+5. **Farmer's Delight present** (§8) — FD Refabricated 26.1 exists but was not installed. Its recipe
+   schema on 26.1 was not re-verified; the two compat files carry the reference's bodies unchanged.
+6. **Salt: Renewed on 26.1** — unknown whether a Fabric build exists.
+7. **Modded-food seasoning** (§6) — no second food mod installed.
+8. **`build/libs` also holds stale jars from the other three branches** (`…-fabric-1.21.1-…`,
+   `…-neoforge-1.21.1-…`, `…-neoforge-26.1.2-…`). Gitignored build output, not artifacts of this port;
+   `gradlew clean` clears them.
+9. **Environment note, not a port issue:** this machine runs Avast Web/Mail Shield TLS interception
+   whose CA is absent from the JDK truststore, so Java-side downloads fail with PKIX errors unless the
+   JVM is pointed at the Windows root store
+   (`JAVA_TOOL_OPTIONS=-Djavax.net.ssl.trustStoreType=Windows-ROOT`). Deliberately not committed.
+10. **`port-kit/fabric-26.1-template/` does not exist under that name** — the template is at
+    `port-kit/fabric-example-mod-26.1/fabric-example-mod-26.1/` (nested twice). Versions were taken
+    from it, with the two documented exceptions in Port details.
 
 ## 12. Sign-off
 
 - ☐ Every line above is either checked, or left unchecked with an entry in §11
 - ☑ Deviation log is complete
 - ☐ PARITY.md committed on this branch
-- ☐ Release tagged `v1.2.1+neoforge-26.1`
+- ☐ Release tagged `v1.2.1+fabric-26.1`
 
 **Not signed off.** Sections 2–8 are substantially unverified. The port compiles, builds, and loads
-cleanly on both client and dedicated server, and every invariant in the brief is mechanically verified —
-that is a different and weaker claim than "it works." It should not be released until a human has
-played it, starting with the pepper vine's render layer (§11.3).
+cleanly on both client and dedicated server, every invariant in the brief is mechanically verified,
+and the recipe/advancement counts match the reference exactly — but that is a weaker claim than "it
+works." It should not be released until a human has played it, starting with the worldgen comparison
+(§11.2) and the cauldron interaction (§11.3).

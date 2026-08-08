@@ -1,5 +1,6 @@
 package com.fiskerz.saltandpepper;
 
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -15,57 +16,57 @@ import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * Step 1 of the pepper chain: blanching green peppercorns in a water cauldron sitting on a heat source.
  *
- * <p>Implemented as an interaction event handler rather than by overriding the cauldron block, so
- * vanilla cauldrons keep all their normal behaviour and no block entity is needed.
+ * <p>Implemented as an interaction callback rather than by overriding the cauldron block, so vanilla
+ * cauldrons keep all their normal behaviour and no block entity is needed.
+ *
+ * <p>NeoForge used {@code PlayerInteractEvent.RightClickBlock}; the Fabric equivalent is
+ * {@link UseBlockCallback}, which fires at the same point (before the block's own interaction) and
+ * likewise once per hand. Returning anything other than {@code PASS} cancels further processing, which
+ * is what the NeoForge version achieved by cancelling the event and setting a success result.
  */
-@EventBusSubscriber(modid = SaltandPepper.MODID)
 public final class CauldronBlanchingHandler {
     private CauldronBlanchingHandler() {}
 
-    @SubscribeEvent
-    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        // The event fires for both hands; only the main hand should blanch, otherwise a player holding
+    public static void register() {
+        UseBlockCallback.EVENT.register(CauldronBlanchingHandler::onUseBlock);
+    }
+
+    private static InteractionResult onUseBlock(Player player, Level level, InteractionHand hand, BlockHitResult hitResult) {
+        // The callback fires for both hands; only the main hand should blanch, otherwise a player holding
         // peppercorns in both hands would convert two batches from one click.
-        if (event.getHand() != InteractionHand.MAIN_HAND) {
-            return;
+        if (hand != InteractionHand.MAIN_HAND) {
+            return InteractionResult.PASS;
         }
 
-        Player player = event.getEntity();
         if (player.isSecondaryUseActive()) {
-            return;
+            return InteractionResult.PASS;
         }
 
-        ItemStack held = event.getItemStack();
-        if (!held.is(ModItems.GREEN_PEPPERCORNS.get())) {
-            return;
+        ItemStack held = player.getItemInHand(hand);
+        if (!held.is(ModItems.GREEN_PEPPERCORNS)) {
+            return InteractionResult.PASS;
         }
 
-        Level level = event.getLevel();
-        BlockPos pos = event.getPos();
+        BlockPos pos = hitResult.getBlockPos();
         BlockState cauldron = level.getBlockState(pos);
 
         if (!cauldron.is(Blocks.WATER_CAULDRON) || cauldron.getValue(LayeredCauldronBlock.LEVEL) < 1) {
-            return;
+            return InteractionResult.PASS;
         }
         if (!isHeated(level, pos.below())) {
-            return;
+            return InteractionResult.PASS;
         }
 
-        // Consume the interaction on both sides so the arm swings client-side and nothing else fires.
-        // 26.1 removed InteractionResult.sidedSuccess; SUCCESS is the sealed-interface constant that
-        // swings the arm client-side, matching what vanilla block interactions now return.
-        event.setCanceled(true);
-        event.setCancellationResult(InteractionResult.SUCCESS);
-
         if (level.isClientSide()) {
-            return;
+            // Consume the interaction on both sides so the arm swings client-side and nothing else fires.
+            // 26.1 removed InteractionResult.sidedSuccess; SUCCESS is the constant carrying
+            // SwingSource.CLIENT, which is what sidedSuccess(true) used to return.
+            return InteractionResult.SUCCESS;
         }
 
         int batch = Math.min(held.getCount(), Config.BLANCH_BATCH_SIZE.get());
@@ -73,7 +74,7 @@ public final class CauldronBlanchingHandler {
             held.shrink(batch);
         }
 
-        ItemStack blanched = new ItemStack(ModItems.BLANCHED_PEPPERCORNS.get(), batch);
+        ItemStack blanched = new ItemStack(ModItems.BLANCHED_PEPPERCORNS, batch);
         if (!player.getInventory().add(blanched)) {
             player.drop(blanched, false);
         }
@@ -87,6 +88,10 @@ public final class CauldronBlanchingHandler {
                     pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
                     8, 0.2, 0.1, 0.2, 0.01);
         }
+
+        // sidedSuccess(false) was CONSUME: the client has already swung, so the server must not
+        // trigger a second swing.
+        return InteractionResult.CONSUME;
     }
 
     /**

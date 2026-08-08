@@ -1,0 +1,31 @@
+{
+	"schemaVersion": 1,
+	"id": "saltandpepper",
+	"version": "${version}",
+	"name": "Salt & Pepper",
+	"description": "Adds salt and pepper to enhance your food just a tiny bit.",
+	"license": "MIT",
+	"icon": "icon.png",
+	"environment": "*",
+	"authors": [
+		"Fiskerz"
+	],
+	"entrypoints": {
+		"main": [
+			"com.fiskerz.saltandpepper.SaltandPepper"
+		],
+		"client": [
+			"com.fiskerz.saltandpepper.client.SaltandPepperClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.1.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"farmersdelight": "*",
+		"salt": "*"
+	}
+}

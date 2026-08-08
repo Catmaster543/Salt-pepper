@@ -1,6 +1,6 @@
 package com.fiskerz.saltandpepper;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import com.mojang.serialization.MapCodec;
 
@@ -33,7 +33,8 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.Tags;
+
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalBiomeTags;
 
 /**
  * Cocoa-pod-style pepper vine. Geometry, growth pacing and shapes are taken verbatim from vanilla
@@ -156,15 +157,18 @@ public class PepperVineBlock extends HorizontalDirectionalBlock implements Bonem
             return;
         }
         // Same 1-in-5 pacing as cocoa.
-        if (net.neoforged.neoforge.common.CommonHooks.canCropGrow(level, pos, state, random.nextInt(5) == 0)) {
+        //
+        // NeoForge wrapped this in CommonHooks.canCropGrow / fireCropGrowPost, which let other mods veto
+        // or accelerate growth. Fabric has no equivalent event, so the roll stands on its own; the
+        // pacing itself is unchanged.
+        if (random.nextInt(5) == 0) {
             level.setBlock(pos, state.setValue(AGE, age + 1), Block.UPDATE_CLIENTS);
-            net.neoforged.neoforge.common.CommonHooks.fireCropGrowPost(level, pos, state);
         }
     }
 
     private static boolean isJungle(LevelReader level, BlockPos pos) {
         var biome = level.getBiome(pos);
-        return biome.is(BiomeTags.IS_JUNGLE) || biome.is(Tags.Biomes.IS_JUNGLE);
+        return biome.is(BiomeTags.IS_JUNGLE) || biome.is(ConventionalBiomeTags.IS_JUNGLE);
     }
 
     @Override
@@ -196,7 +200,7 @@ public class PepperVineBlock extends HorizontalDirectionalBlock implements Bonem
         }
 
         if (!level.isClientSide()) {
-            popResource(level, pos, new ItemStack(ModItems.GREEN_PEPPERCORNS.get(), 2 + level.getRandom().nextInt(2)));
+            popResource(level, pos, new ItemStack(ModItems.GREEN_PEPPERCORNS, 2 + level.getRandom().nextInt(2)));
             BlockState reset = state.setValue(AGE, 0);
             level.setBlock(pos, reset, Block.UPDATE_CLIENTS);
             level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, reset));
