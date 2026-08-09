@@ -2,15 +2,17 @@ package com.fiskerz.saltandpepper;
 
 import javax.annotation.Nullable;
 
-import com.mojang.serialization.MapCodec;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -19,6 +21,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
@@ -33,7 +36,6 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.Tags;
 
 /**
  * Cocoa-pod-style pepper vine. Geometry, growth pacing and shapes are taken verbatim from vanilla
@@ -44,12 +46,23 @@ import net.neoforged.neoforge.common.Tags;
  *   <li>right-clicking a mature vine harvests peppercorns and resets it to age 0</li>
  *   <li>growth can optionally be restricted to jungle biomes via config</li>
  * </ul>
+ *
+ * <p>1.20.1 differences from the 1.21.1 build: block overrides are {@code public} rather than
+ * {@code protected}, there is no {@code MapCodec}/{@code codec()} (that arrives in 1.20.5),
+ * {@code isValidBonemealTarget} and {@code isPathfindable} take an extra parameter, and the
+ * right-click hook is {@code use(...)} rather than {@code useWithoutItem(...)}.
  */
 public class PepperVineBlock extends HorizontalDirectionalBlock implements BonemealableBlock {
-    public static final MapCodec<PepperVineBlock> CODEC = simpleCodec(PepperVineBlock::new);
-
     public static final int MAX_AGE = 2;
     public static final IntegerProperty AGE = BlockStateProperties.AGE_2;
+
+    /**
+     * Forge's common biome tags on 1.20.1 live in the {@code forge:} namespace and include no jungle
+     * entry, so the modded-jungle half of the 1.21.1 check ({@code #c:is_jungle}) is expressed
+     * directly as {@code #forge:is_jungle} - the 1.20.1 convention for the same idea.
+     */
+    private static final TagKey<Biome> FORGE_IS_JUNGLE =
+            TagKey.create(Registries.BIOME, new ResourceLocation("forge", "is_jungle"));
 
     // Verbatim from CocoaBlock so the pods sit on the log face exactly like vanilla cocoa.
     protected static final VoxelShape[] EAST_AABB = new VoxelShape[] {
@@ -71,11 +84,6 @@ public class PepperVineBlock extends HorizontalDirectionalBlock implements Bonem
     }
 
     @Override
-    public MapCodec<PepperVineBlock> codec() {
-        return CODEC;
-    }
-
-    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, AGE);
     }
@@ -83,7 +91,7 @@ public class PepperVineBlock extends HorizontalDirectionalBlock implements Bonem
     // -- Attachment -----------------------------------------------------------------------------
 
     @Override
-    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         return level.getBlockState(pos.relative(state.getValue(FACING))).is(ModTags.Blocks.PEPPER_VINE_SUPPORTS);
     }
 
@@ -108,14 +116,14 @@ public class PepperVineBlock extends HorizontalDirectionalBlock implements Bonem
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor level, BlockPos currentPos, BlockPos facingPos) {
+    public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor level, BlockPos currentPos, BlockPos facingPos) {
         return facing == state.getValue(FACING) && !state.canSurvive(level, currentPos)
                 ? Blocks.AIR.defaultBlockState()
                 : super.updateShape(state, facing, facingState, level, currentPos, facingPos);
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         int age = state.getValue(AGE);
         return switch (state.getValue(FACING)) {
             case SOUTH -> SOUTH_AABB[age];
@@ -126,19 +134,19 @@ public class PepperVineBlock extends HorizontalDirectionalBlock implements Bonem
     }
 
     @Override
-    protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
+    public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos pos, PathComputationType pathComputationType) {
         return false;
     }
 
     // -- Growth ---------------------------------------------------------------------------------
 
     @Override
-    protected boolean isRandomlyTicking(BlockState state) {
+    public boolean isRandomlyTicking(BlockState state) {
         return state.getValue(AGE) < MAX_AGE;
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         int age = state.getValue(AGE);
         if (age >= MAX_AGE) {
             return;
@@ -147,19 +155,19 @@ public class PepperVineBlock extends HorizontalDirectionalBlock implements Bonem
             return;
         }
         // Same 1-in-5 pacing as cocoa.
-        if (net.neoforged.neoforge.common.CommonHooks.canCropGrow(level, pos, state, random.nextInt(5) == 0)) {
+        if (net.minecraftforge.common.ForgeHooks.onCropsGrowPre(level, pos, state, random.nextInt(5) == 0)) {
             level.setBlock(pos, state.setValue(AGE, age + 1), Block.UPDATE_CLIENTS);
-            net.neoforged.neoforge.common.CommonHooks.fireCropGrowPost(level, pos, state);
+            net.minecraftforge.common.ForgeHooks.onCropsGrowPost(level, pos, state);
         }
     }
 
     private static boolean isJungle(LevelReader level, BlockPos pos) {
         var biome = level.getBiome(pos);
-        return biome.is(BiomeTags.IS_JUNGLE) || biome.is(Tags.Biomes.IS_JUNGLE);
+        return biome.is(BiomeTags.IS_JUNGLE) || biome.is(FORGE_IS_JUNGLE);
     }
 
     @Override
-    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
+    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state, boolean isClient) {
         return state.getValue(AGE) < MAX_AGE;
     }
 
@@ -176,14 +184,14 @@ public class PepperVineBlock extends HorizontalDirectionalBlock implements Bonem
     // -- Harvest --------------------------------------------------------------------------------
 
     /**
-     * Right-click harvest. Implemented on {@code useWithoutItem} rather than {@code useItemOn} so that
-     * it fires with an empty hand and with any item that has no block interaction of its own, matching
-     * sweet berry bushes. Drops 2-3 green peppercorns, no seeds, and resets to age 0.
+     * Right-click harvest. On 1.20.1 this is {@code use(...)}, which fires with an empty hand and with
+     * any item that has no block interaction of its own, matching sweet berry bushes. Drops 2-3 green
+     * peppercorns, no seeds, and resets to age 0.
      */
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (state.getValue(AGE) < MAX_AGE) {
-            return super.useWithoutItem(state, level, pos, player, hitResult);
+            return super.use(state, level, pos, player, hand, hitResult);
         }
 
         if (!level.isClientSide) {

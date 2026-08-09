@@ -3,9 +3,8 @@ package com.fiskerz.saltandpepper;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.RegistryObject;
 
 public final class ModCreativeTabs {
     private ModCreativeTabs() {}
@@ -13,10 +12,14 @@ public final class ModCreativeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, SaltandPepper.MODID);
 
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN = CREATIVE_MODE_TABS.register("main",
+    /**
+     * 1.21.1 called {@code withTabsBefore(CreativeModeTabs.SPAWN_EGGS)} to sit ahead of the spawn eggs
+     * tab. That builder method does not exist on 1.20.1, so the tab takes its default position. The
+     * tab's contents and their order are unchanged.
+     */
+    public static final RegistryObject<CreativeModeTab> MAIN = CREATIVE_MODE_TABS.register("main",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.saltandpepper.main"))
-                    .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
                     .icon(() -> ModItems.GROUND_PEPPER.get().getDefaultInstance())
                     .displayItems((parameters, output) -> {
                         output.accept(ModItems.PEPPER_SEEDS.get());

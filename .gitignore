@@ -38,3 +38,6 @@ run/
 **/src/generated/**/.cache/
 repo/
 !**/src/**/repo/
+
+# Third-party mod jars used only for dev testing (see port-kit/PARITY.MD)
+libs/

@@ -1,13 +1,13 @@
 package com.fiskerz.saltandpepper;
 
-import net.neoforged.fml.ModList;
+import net.minecraftforge.fml.ModList;
 
 /**
  * Runtime guard against <a href="https://modrinth.com/mod/salt">Salt: Renewed</a> (mod id {@code salt}).
  *
  * <p>When that mod is present our salt content stands down completely: worldgen is skipped, the items
  * are hidden from the creative tab, and the ore/refining recipes drop out via a
- * {@code neoforge:not(neoforge:mod_loaded)} condition. Their salt is added to
+ * {@code forge:not(forge:mod_loaded)} condition. Their salt is added to
  * {@code #saltandpepper:seasonings} by a conditional tag file so it drives our seasoning system instead.
  *
  * <p>Registry entries cannot be conditional, so the items and blocks are always registered - only

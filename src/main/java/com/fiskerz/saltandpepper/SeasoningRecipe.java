@@ -2,11 +2,11 @@ package com.fiskerz.saltandpepper;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -15,21 +15,25 @@ import net.minecraft.world.level.Level;
  * Shapeless "food + seasoning" crafting recipe.
  *
  * <p>This class only decides how a crafting grid maps onto a (food, seasoning) pair. The rules for
- * what may be seasoned and what seasoning does live in {@link SeasoningHelper}, shared with
- * {@link ShakerItem} so the two application paths cannot drift apart.
+ * what may be seasoned live in {@link SeasoningHelper}, shared with {@link ShakerItem} so the two
+ * application paths cannot drift apart.
+ *
+ * <p>1.20.1 signatures: {@code matches} takes a {@code CraftingContainer} rather than a
+ * {@code CraftingInput}, and {@code assemble} takes a {@code RegistryAccess} rather than a
+ * {@code HolderLookup.Provider}. The matching logic itself is unchanged.
  */
 public class SeasoningRecipe extends CustomRecipe {
-    public SeasoningRecipe(CraftingBookCategory category) {
-        super(category);
+    public SeasoningRecipe(ResourceLocation id, CraftingBookCategory category) {
+        super(id, category);
     }
 
     @Override
-    public boolean matches(CraftingInput input, Level level) {
+    public boolean matches(CraftingContainer input, Level level) {
         return resolve(input) != null;
     }
 
     @Override
-    public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+    public ItemStack assemble(CraftingContainer input, RegistryAccess registries) {
         Match match = resolve(input);
         return match == null ? ItemStack.EMPTY : SeasoningHelper.season(match.food, match.seasoningId, 1);
     }
@@ -53,11 +57,11 @@ public class SeasoningRecipe extends CustomRecipe {
     private record Match(ItemStack food, ResourceLocation seasoningId) {}
 
     @Nullable
-    private static Match resolve(CraftingInput input) {
+    private static Match resolve(CraftingContainer input) {
         ItemStack first = ItemStack.EMPTY;
         ItemStack second = ItemStack.EMPTY;
 
-        for (int i = 0; i < input.size(); i++) {
+        for (int i = 0; i < input.getContainerSize(); i++) {
             ItemStack stack = input.getItem(i);
             if (stack.isEmpty()) {
                 continue;

@@ -3,22 +3,22 @@ package com.fiskerz.saltandpepper;
 import java.util.List;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 
 /**
  * Appends a single gray italic {@code Seasoned: Salt, Pepper} line to seasoned foods.
  * The item itself is deliberately never renamed.
  */
-@EventBusSubscriber(modid = SaltandPepper.MODID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = SaltandPepper.MODID, value = Dist.CLIENT)
 public final class SeasoningTooltipHandler {
     private SeasoningTooltipHandler() {}
 
@@ -48,10 +48,10 @@ public final class SeasoningTooltipHandler {
      * {@code seasoning.<namespace>.<path>}, and otherwise falls back to the item's own name.
      */
     private static Component displayName(ResourceLocation id) {
-        if (id.equals(ModItems.GROUND_PEPPER.getId())) {
+        if (id.equals(ModItems.GROUND_PEPPER_ID)) {
             return Component.translatable("seasoning.saltandpepper.pepper");
         }
-        if (id.equals(ModItems.SALT.getId())) {
+        if (id.equals(ModItems.SALT_ID)) {
             return Component.translatable("seasoning.saltandpepper.salt");
         }
 
@@ -60,7 +60,7 @@ public final class SeasoningTooltipHandler {
             return Component.translatable(key);
         }
 
-        Item item = BuiltInRegistries.ITEM.get(id);
+        Item item = ForgeRegistries.ITEMS.getValue(id);
         return item.getDescription();
     }
 }

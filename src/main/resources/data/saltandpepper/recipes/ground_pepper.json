@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "ground_pepper",
+  "ingredients": [
+    {
+      "item": "saltandpepper:black_peppercorns"
+    }
+  ],
+  "result": {
+    "item": "saltandpepper:ground_pepper",
+    "count": 2
+  }
+}

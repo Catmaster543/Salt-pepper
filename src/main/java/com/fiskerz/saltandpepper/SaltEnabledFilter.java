@@ -1,6 +1,6 @@
 package com.fiskerz.saltandpepper;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -12,7 +12,7 @@ import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
  * Placement modifier that drops every position when this mod's salt is disabled - either by config or
  * because Salt: Renewed is installed.
  *
- * <p>This exists because a NeoForge biome modifier cannot cleanly be disabled at runtime: biome
+ * <p>This exists because a Forge biome modifier cannot cleanly be disabled at runtime: biome
  * modifiers are a datapack registry baked into the biome source when the level loads, and there is no
  * supported way to retract one afterwards based on a config value. Putting the guard in the placement
  * chain keeps the ore feature itself vanilla ({@code minecraft:ore}) while still letting the decision
@@ -20,7 +20,7 @@ import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
  */
 public class SaltEnabledFilter extends PlacementFilter {
     public static final SaltEnabledFilter INSTANCE = new SaltEnabledFilter();
-    public static final MapCodec<SaltEnabledFilter> CODEC = MapCodec.unit(INSTANCE);
+    public static final Codec<SaltEnabledFilter> CODEC = Codec.unit(() -> INSTANCE);
 
     private SaltEnabledFilter() {}
 

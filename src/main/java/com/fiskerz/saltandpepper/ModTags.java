@@ -16,13 +16,21 @@ public final class ModTags {
 
         /** Items that can be applied to a food as a seasoning. */
         public static final TagKey<Item> SEASONINGS = tag("seasonings");
-        /** Foods that are allowed to be seasoned at all. Defaults to {@code #c:foods}. */
+        /**
+         * Foods that datapack authors may restrict seasoning to.
+         *
+         * <p>On 1.21.1 this shipped containing {@code #c:foods} and was checked as a hard gate.
+         * {@code c:foods} is a 1.20.2+ convention with no 1.20.1 equivalent, so the tag still exists
+         * for datapack authors but ships empty and is <em>not</em> used as a gate - see
+         * {@link SeasoningHelper#isSeasonableFood}. Eligibility is decided by "has food properties and
+         * is not blacklisted", which is the same set of items the 1.21.1 build accepted.
+         */
         public static final TagKey<Item> SEASONABLE = tag("seasonable");
-        /** Foods that must never be seasoned, even if they are in {@link #SEASONABLE}. */
+        /** Foods that must never be seasoned. */
         public static final TagKey<Item> SEASONING_BLACKLIST = tag("seasoning_blacklist");
 
         private static TagKey<Item> tag(String name) {
-            return ItemTags.create(ResourceLocation.fromNamespaceAndPath(SaltandPepper.MODID, name));
+            return ItemTags.create(new ResourceLocation(SaltandPepper.MODID, name));
         }
     }
 
@@ -35,7 +43,7 @@ public final class ModTags {
         public static final TagKey<Block> PEPPER_VINE_SUPPORTS = tag("pepper_vine_supports");
 
         private static TagKey<Block> tag(String name) {
-            return BlockTags.create(ResourceLocation.fromNamespaceAndPath(SaltandPepper.MODID, name));
+            return BlockTags.create(new ResourceLocation(SaltandPepper.MODID, name));
         }
     }
 }

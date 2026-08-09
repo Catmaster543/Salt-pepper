@@ -1,6 +1,6 @@
 package com.fiskerz.saltandpepper;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
  * Common config, written to {@code saltandpepper-common.toml}.
@@ -16,31 +16,31 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public final class Config {
     private Config() {}
 
-    private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+    private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 
     // -- Seasoning ------------------------------------------------------------------------------
 
-    public static final ModConfigSpec.IntValue MAX_NUTRITION;
-    public static final ModConfigSpec.IntValue PEPPER_BONUS_NUTRITION;
-    public static final ModConfigSpec.DoubleValue PEPPER_BONUS_SATURATION_MODIFIER;
-    public static final ModConfigSpec.IntValue SALT_BONUS_NUTRITION;
-    public static final ModConfigSpec.DoubleValue SALT_BONUS_SATURATION_MODIFIER;
+    public static final ForgeConfigSpec.IntValue MAX_NUTRITION;
+    public static final ForgeConfigSpec.IntValue PEPPER_BONUS_NUTRITION;
+    public static final ForgeConfigSpec.DoubleValue PEPPER_BONUS_SATURATION_MODIFIER;
+    public static final ForgeConfigSpec.IntValue SALT_BONUS_NUTRITION;
+    public static final ForgeConfigSpec.DoubleValue SALT_BONUS_SATURATION_MODIFIER;
 
     // -- Shakers --------------------------------------------------------------------------------
 
-    public static final ModConfigSpec.IntValue SHAKER_CAPACITY;
-    public static final ModConfigSpec.IntValue USES_PER_REFILL_ITEM;
+    public static final ForgeConfigSpec.IntValue SHAKER_CAPACITY;
+    public static final ForgeConfigSpec.IntValue USES_PER_REFILL_ITEM;
 
     // -- Pepper ---------------------------------------------------------------------------------
 
-    public static final ModConfigSpec.BooleanValue RESTRICT_GROWTH_TO_JUNGLE;
-    public static final ModConfigSpec.IntValue BLANCH_BATCH_SIZE;
+    public static final ForgeConfigSpec.BooleanValue RESTRICT_GROWTH_TO_JUNGLE;
+    public static final ForgeConfigSpec.IntValue BLANCH_BATCH_SIZE;
 
     // -- Salt -----------------------------------------------------------------------------------
 
-    public static final ModConfigSpec.BooleanValue ENABLE_SALT;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_SALT;
 
-    static final ModConfigSpec SPEC;
+    static final ForgeConfigSpec SPEC;
 
     static {
         BUILDER.comment("Seasoning balance.",

@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,6 +19,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 
 /**
  * A portable seasoning container. Pick it up onto the cursor, right-click a stack of food anywhere in
@@ -32,8 +33,8 @@ import net.minecraft.world.item.TooltipFlag;
  * {@code level.isClientSide}; the only side-specific thing is the action bar message, which is
  * server-only because {@code ServerPlayer#displayClientMessage} sends a packet.
  *
- * <p>Fill level lives in {@code saltandpepper:shaker_uses} rather than vanilla durability - see
- * {@link ModDataComponents#SHAKER_USES}. An absent component reads as "full", which is what lets the
+ * <p>Fill level lives in the {@code saltandpepper:shaker_uses} stack NBT tag rather than vanilla durability - see
+ * {@link SeasoningNbt#SHAKER_USES_KEY}. An absent tag reads as "full", which is what lets the
  * crafting recipes hand out a full shaker without hardcoding the configured capacity.
  */
 public class ShakerItem extends Item {
@@ -64,14 +65,14 @@ public class ShakerItem extends Item {
      * config was lowered) is clamped down rather than left over-full.
      */
     public static int getUses(ItemStack stack) {
-        Integer stored = stack.get(ModDataComponents.SHAKER_USES.get());
+        Integer stored = SeasoningNbt.getShakerUses(stack);
         return stored == null ? capacity() : Mth.clamp(stored, 0, capacity());
     }
 
     /** A new shaker stack holding {@code uses}, clamped to capacity. */
     public static ItemStack filled(ShakerItem shaker, int uses) {
         ItemStack stack = new ItemStack(shaker);
-        stack.set(ModDataComponents.SHAKER_USES.get(), Mth.clamp(uses, 0, capacity()));
+        SeasoningNbt.setShakerUses(stack, Mth.clamp(uses, 0, capacity()));
         return stack;
     }
 
@@ -129,8 +130,7 @@ public class ShakerItem extends Item {
                 return false; // Already full, or nothing to take.
             }
             slot.setByPlayer(shrunk(target, consumed));
-            stack.set(ModDataComponents.SHAKER_USES.get(),
-                    Math.min(uses + consumed * usesPerRefillItem(), capacity()));
+            SeasoningNbt.setShakerUses(stack, Math.min(uses + consumed * usesPerRefillItem(), capacity()));
             playRefill(player);
             return true;
         }
@@ -173,8 +173,7 @@ public class ShakerItem extends Item {
                 return false; // Already full, or nothing to take.
             }
             access.set(shrunk(other, consumed));
-            stack.set(ModDataComponents.SHAKER_USES.get(),
-                    Math.min(uses + consumed * usesPerRefillItem(), capacity()));
+            SeasoningNbt.setShakerUses(stack, Math.min(uses + consumed * usesPerRefillItem(), capacity()));
             slot.setChanged();
             playRefill(player);
             return true;
@@ -217,7 +216,7 @@ public class ShakerItem extends Item {
     }
 
     private ResourceLocation seasoningId() {
-        return BuiltInRegistries.ITEM.getKey(this.seasoning.get());
+        return ForgeRegistries.ITEMS.getKey(this.seasoning.get());
     }
 
     /** Spends uses on the cursor-held shaker, leaving an empty shaker behind at zero. */
@@ -225,7 +224,7 @@ public class ShakerItem extends Item {
         if (uses <= 0) {
             player.containerMenu.setCarried(new ItemStack(ModItems.EMPTY_SHAKER.get()));
         } else {
-            shaker.set(ModDataComponents.SHAKER_USES.get(), uses);
+            SeasoningNbt.setShakerUses(shaker, uses);
         }
     }
 
@@ -234,7 +233,7 @@ public class ShakerItem extends Item {
         if (uses <= 0) {
             slot.setByPlayer(new ItemStack(ModItems.EMPTY_SHAKER.get()));
         } else {
-            shaker.set(ModDataComponents.SHAKER_USES.get(), uses);
+            SeasoningNbt.setShakerUses(shaker, uses);
             slot.setChanged();
         }
     }
@@ -284,7 +283,7 @@ public class ShakerItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         tooltipComponents.add(Component.translatable("tooltip.saltandpepper.shaker_uses", getUses(stack), capacity())
                 .withStyle(ChatFormatting.GRAY));
     }

@@ -1,0 +1,30 @@
+{
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [
+        {
+          "type": "forge:not",
+          "value": {
+            "type": "forge:mod_loaded",
+            "modid": "salt"
+          }
+        }
+      ],
+      "recipe":
+        {
+          "type": "minecraft:crafting_shapeless",
+          "category": "misc",
+          "ingredients": [
+            {
+              "item": "saltandpepper:salt_block"
+            }
+          ],
+          "result": {
+            "item": "saltandpepper:salt",
+            "count": 9
+          }
+        }
+    }
+  ]
+}

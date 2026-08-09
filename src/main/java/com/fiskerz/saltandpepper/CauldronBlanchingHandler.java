@@ -15,9 +15,9 @@ import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 /**
  * Step 1 of the pepper chain: blanching green peppercorns in a water cauldron sitting on a heat source.
@@ -25,7 +25,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
  * <p>Implemented as an interaction event handler rather than by overriding the cauldron block, so
  * vanilla cauldrons keep all their normal behaviour and no block entity is needed.
  */
-@EventBusSubscriber(modid = SaltandPepper.MODID)
+@Mod.EventBusSubscriber(modid = SaltandPepper.MODID)
 public final class CauldronBlanchingHandler {
     private CauldronBlanchingHandler() {}
 

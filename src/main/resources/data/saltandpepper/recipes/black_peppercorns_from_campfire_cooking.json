@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:campfire_cooking",
+  "category": "food",
+  "group": "black_peppercorns",
+  "ingredient": {
+    "item": "saltandpepper:blanched_peppercorns"
+  },
+  "result": "saltandpepper:black_peppercorns",
+  "experience": 0.1,
+  "cookingtime": 600
+}

@@ -2,21 +2,22 @@ package com.fiskerz.saltandpepper;
 
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
-@Mod(value = SaltandPepper.MODID, dist = Dist.CLIENT)
-@EventBusSubscriber(modid = SaltandPepper.MODID, value = Dist.CLIENT)
-public class SaltandPepperClient {
-    public SaltandPepperClient(ModContainer container) {
-        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
-    }
+/**
+ * Client-only setup.
+ *
+ * <p>1.21.1 registered a config screen through NeoForge's {@code IConfigScreenFactory} +
+ * {@code ConfigurationScreen}. Forge 1.20.1's equivalent extension point is
+ * {@code ConfigScreenHandler.ConfigScreenFactory}; it has no built-in generic screen, so this simply
+ * does not register one - see the deviation note in PARITY.md.
+ */
+@Mod.EventBusSubscriber(modid = SaltandPepper.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+public final class SaltandPepperClient {
+    private SaltandPepperClient() {}
 
     @SubscribeEvent
     static void onClientSetup(FMLClientSetupEvent event) {
