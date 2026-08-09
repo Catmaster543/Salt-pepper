@@ -31,6 +31,6 @@ public class SaltEnabledFilter extends PlacementFilter {
 
     @Override
     public PlacementModifierType<?> type() {
-        return ModWorldgen.SALT_ENABLED_FILTER.get();
+        return ModWorldgen.SALT_ENABLED_FILTER;
     }
 }

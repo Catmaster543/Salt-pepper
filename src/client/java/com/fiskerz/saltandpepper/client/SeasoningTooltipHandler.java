@@ -1,30 +1,40 @@
-package com.fiskerz.saltandpepper;
+package com.fiskerz.saltandpepper.client;
 
 import java.util.List;
 
+import com.fiskerz.saltandpepper.ModItems;
+import com.fiskerz.saltandpepper.SeasoningHelper;
+
+import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.minecraft.ChatFormatting;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Appends a single gray italic {@code Seasoned: Salt, Pepper} line to seasoned foods.
  * The item itself is deliberately never renamed.
+ *
+ * <p>NeoForge used {@code ItemTooltipEvent}; the Fabric equivalent is {@link ItemTooltipCallback},
+ * which lives in the client-only half of fabric-item-api-v1 - hence this class living in the client
+ * source set rather than alongside the rest of the mod.
  */
-@Mod.EventBusSubscriber(modid = SaltandPepper.MODID, value = Dist.CLIENT)
 public final class SeasoningTooltipHandler {
     private SeasoningTooltipHandler() {}
 
-    @SubscribeEvent
-    public static void onItemTooltip(ItemTooltipEvent event) {
-        List<ResourceLocation> seasonings = SeasoningHelper.getSeasonings(event.getItemStack());
+    public static void register() {
+        // On Fabric API 0.92.11 the callback is getTooltip(ItemStack, TooltipFlag, List<Component>) -
+        // three parameters. 1.21.1 splits the second into a context and a type, giving four. Only the
+        // stack and the line list are used either way, so the tooltip itself is unchanged.
+        ItemTooltipCallback.EVENT.register((stack, flag, lines) -> appendSeasonings(stack, lines));
+    }
+
+    private static void appendSeasonings(ItemStack stack, List<Component> lines) {
+        List<ResourceLocation> seasonings = SeasoningHelper.getSeasonings(stack);
         if (seasonings.isEmpty()) {
             return;
         }
@@ -37,7 +47,7 @@ public final class SeasoningTooltipHandler {
             names.append(displayName(seasonings.get(i)));
         }
 
-        event.getToolTip().add(Component.translatable("tooltip.saltandpepper.seasoned", names)
+        lines.add(Component.translatable("tooltip.saltandpepper.seasoned", names)
                 .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
     }
 
@@ -60,7 +70,7 @@ public final class SeasoningTooltipHandler {
             return Component.translatable(key);
         }
 
-        Item item = ForgeRegistries.ITEMS.getValue(id);
+        Item item = BuiltInRegistries.ITEM.get(id);
         return item.getDescription();
     }
 }

@@ -1,7 +1,9 @@
-# Parity checklist — Forge 1.20.1
+# Parity checklist — Fabric 1.20.1
 
-Reference build: NeoForge 1.21.1 on `main-neoforge-1.21.1`. Every line below means "behaves the same as
-the reference build," not "works."
+Reference build: NeoForge 1.21.1 on `main-neoforge-1.21.1`. This branch was ported from
+**Forge 1.20.1** (`refs/heads/Forge-1.20.1`, `2a3140c`) — same Minecraft version, loader swap only — so
+the immediate comparison target is that branch. Every line below means "behaves the same as the
+reference build," not "works."
 
 **Verification codes**
 
@@ -17,10 +19,12 @@ Lines marked `[H]` or `[C]` cannot be signed off by an agent. Unchecked lines ar
 
 | | |
 | --- | --- |
-| Target | Forge 1.20.1 |
-| Branch | `Forge-1.20.1` |
-| Reference commit on main | `43af4fe` (`main-neoforge-1.21.1`, "README update on download informations") |
-| Tested on | Forge 47.4.10, Java 17 (Temurin 17.0.20.8), Gradle 8.8, Parchment `2023.09.03-1.20.1` |
+| Target | Fabric 1.20.1 |
+| Branch | `Fabric-1.20.1` |
+| Ported from | `refs/heads/Forge-1.20.1` (`2a3140c`) |
+| Reference commit on main | `43af4fe` (`main-neoforge-1.21.1`) |
+| Fabric 1.21.1 sibling used as the loader work list | `refs/heads/Fabric-1.21.1` (`d568eaf`) |
+| Tested on | Loader 0.19.3, Fabric API 0.92.11+1.20.1, Loom 1.17.17, Gradle 9.5.1, Java 17 toolchain (Gradle daemon on JDK 25) |
 | Test world seed used for comparisons | none — no seeded side-by-side worldgen comparison was run (see §11) |
 | Completed by / date | Claude (agent), 2026-08-09 |
 
@@ -30,31 +34,27 @@ Lines marked `[H]` or `[C]` cannot be signed off by an agent. Unchecked lines ar
 | --- | --- | --- |
 | ☑ | Builds without warnings that reference missing resources | A |
 | ☑ | Mod id and namespace are `saltandpepper` | A |
-| ☑ | `git diff main` shows no changes under `textures/` or `lang/` | A |
+| ☑ | `git diff` shows no changes under `textures/` or `lang/` | A |
 | ☑ | Every registry id identical to reference (items, blocks, recipes, tags, advancements) | A |
-| ☑ | Component keys `saltandpepper:seasonings` and `saltandpepper:shaker_uses` unchanged | A |
+| ☑ | NBT keys `saltandpepper:seasonings` and `saltandpepper:shaker_uses` unchanged | A |
 | ☑ | All balance numbers identical: seasoning bonuses, shaker capacity, refill cost, ore density settings, drop counts, smelting times | A |
 | ☑ | No Java imports of Farmer's Delight classes anywhere | A |
 
 Evidence:
 
-- Dedicated server boots clean: `Done (6.509s)`, zero `ERROR`/`Parsing error` lines from the mod.
-- `git diff main-neoforge-1.21.1 -- .../textures .../lang` → empty. Same for `models/` and `blockstates/`.
-- All **35** datapack files map 1:1 onto the reference set once the 1.20.1 folder renames
-  (`recipe→recipes`, `advancement→advancements`, `loot_table→loot_tables`, `tags/item→tags/items`,
-  `tags/block→tags/blocks`, `neoforge→forge`) are normalised — no id added, dropped or renamed.
-- **10/10** config defaults identical (`maxNutrition 20`, pepper `+1 / +0.2`, salt `+1 / +0.2`,
-  `shakerCapacity 64`, `usesPerRefillItem 8`, `blanchBatchSize 8`, `enableSalt true`,
-  `restrictGrowthToJungle false`), including their min/max ranges.
-- **36/36** numeric fields across all recipes and loot tables identical (counts, `cookingtime`,
-  `experience`, `rolls`, `bonus_rolls`).
-- `data/saltandpepper/worldgen/` is **byte-identical** to the reference — the configured/placed-feature
-  format did not change between the two versions.
-- Grep for `farmersdelight|vectorwing` across `src/main/java/` → no matches.
-
-Note on the component keys: they are now **stack NBT keys**, not data components (see §10). The strings
-are the fully-qualified ids the components used on 1.21.1 — `saltandpepper:seasonings` and
-`saltandpepper:shaker_uses` — so a datapack or third-party tool reading them sees the same names.
+- `gradlew build` succeeds; dev client reaches the main menu (`Sound engine started`) and the dedicated
+  server loads its datapack, both with zero errors.
+- `git diff Forge-1.20.1 -- src/main/resources/assets` is **empty** — textures, lang, models and
+  blockstates are untouched.
+- No datapack file was added, renamed or removed except the three `forge/biome_modifier/*.json`, which
+  are replaced in code (§5). Recipe *ids* are unchanged; only the condition wrapper inside six of them
+  changed.
+- **10/10** config defaults and ranges identical to the Forge branch (`maxNutrition 20 [0,100]`,
+  pepper `+1 [0,20]` / `+0.2 [0,2]`, salt `+1 [0,20]` / `+0.2 [0,2]`, `enableSalt true`,
+  `shakerCapacity 64 [1,1024]`, `usesPerRefillItem 8 [1,1024]`, `restrictGrowthToJungle false`,
+  `blanchBatchSize 8 [1,64]`), despite the file moving from TOML to JSON.
+- Grep for `farmersdelight|vectorwing` across `src/` → no matches. Farmer's Delight is not a Gradle
+  dependency either.
 
 ## 2. Content parity
 
@@ -67,9 +67,7 @@ are the fully-qualified ids the components used on 1.21.1 — `saltandpepper:sea
 | ☐ | All lang keys resolve; no raw keys visible in-game `[H]` | H |
 | ☐ | All textures and models render correctly, including the three vine stages `[H]` | H |
 
-7 base items: `pepper_seeds`, `green_peppercorns`, `blanched_peppercorns`, `black_peppercorns`,
-`ground_pepper`, `raw_rock_salt`, `salt`. 3 shakers: `empty_shaker`, `salt_shaker`, `pepper_shaker`.
-4 blocks: `pepper_vine`, `rock_salt_ore`, `deepslate_rock_salt_ore`, `salt_block`.
+The tab's **position** in the tab strip differs — see §10.
 
 ## 3. Pepper chain
 
@@ -93,27 +91,27 @@ are the fully-qualified ids the components used on 1.21.1 — `saltandpepper:sea
 | --- | --- | --- |
 | ☐ | Ore generates at comparable density to the reference, same seed `[C]` | C |
 | ☐ | Deepslate variant appears below y=0 `[H]` | H |
-| ☑ | Any pickaxe mines it | A (block properties unchanged from reference) |
+| ☑ | Any pickaxe mines it | A (block properties unchanged) |
 | ☐ | Silk Touch and Fortune behave identically to the reference `[C]` | C |
 | ☑ | Smelting and blasting both refine raw rock salt | A |
 
-The ore loot tables needed a real conversion, not just a rename: the `match_tool` predicate is
-`{"enchantments": [{"enchantment": ..., "levels": ...}]}` on 1.20.1, against the 1.21 nested
-`{"predicates": {"minecraft:enchantments": [...]}}` form the reference uses. Verified against vanilla
-1.20.1 `blocks/coal_ore.json`. The drop counts and `apply_bonus`/`ore_drops` fortune formula are
-unchanged, but the in-game behaviour is left unchecked pending a human test.
+The ore loot tables are byte-identical to the Forge branch, including the 1.20.1 `match_tool`
+predicate and the `apply_bonus`/`ore_drops` fortune formula. The xp range is also unchanged, though
+`DropExperienceBlock` takes it as its second argument on 1.20.1 rather than its first.
 
 ## 5. Worldgen
 
 | ✓ | Check | How |
 | --- | --- | --- |
 | ☐ | Wild vines generate in jungle, bamboo jungle and sparse jungle `[H]` | H |
-| ☐ | Vine frequency comparable to reference, same seed — spottable but not spammy `[C]` | C |
+| ☐ | Vine frequency comparable to reference, same seed `[C]` | C |
 | ☐ | Modded jungle biomes receive generation (test with any biome mod) `[H]` | H |
 | ☐ | Nothing generates where it shouldn't (no vines outside jungles, no salt in the Nether/End) `[H]` | H |
 
-The placed/configured features are byte-identical; only the biome modifiers were rewritten
-(`neoforge:add_features` → `forge:add_features`, `neoforge:or` → `forge:or`, `#c:is_*` → `#forge:is_*`).
+The placed and configured features are byte-identical; all density tuning lives there and none of it
+moved. Only the three biome *modifiers* changed form, from `forge:add_features` JSON to
+`ModBiomeModifications` against the Fabric Biome API. Selectors and generation steps mirror the JSON
+one-for-one, but the convention tag ids differ — see §10.
 
 ## 6. Seasoning system
 
@@ -128,21 +126,26 @@ The placed/configured features are byte-identical; only the biome modifiers were
 | ☑ | Blacklisted items are rejected | A |
 | ☐ | Config values change the bonus as expected `[H]` | H |
 
-**Numeric parity, verified by direct comparison rather than by reasoning.** Both code paths were
-transcribed verbatim into a standalone harness — the reference's
-`SeasoningHelper.season()` + 1.21.1 `FoodData.eat(nutrition, absoluteSaturation)`, against this port's
-untouched 1.20.1 `FoodData.add(nutrition, saturationModifier)` + `SeasoningEffectHandler`'s
-after-the-fact delta — and run over the full cross product of:
+**Numeric parity, verified by direct comparison rather than by reasoning.** Two independent checks:
 
-- every vanilla food's `(nutrition, saturationModifier)` pair, plus a synthetic sweep of
-  `nutrition` 0–20 × `saturationModifier` 0.00–2.00 in 0.05 steps, plus the clamp corners;
-- 0–4 seasonings applied;
-- every starting hunger state: food level 0–20 × saturation 0–(food level) in 0.5 steps.
+1. `git diff Forge-1.20.1 -- SeasoningEffectHandler.java` shows exactly **two** substantive changed
+   lines: the side guard (`event.getEntity()`/`player.level()` → the `Level` parameter) and how the
+   base `FoodProperties` are fetched. Every arithmetic line is character-identical.
+2. A standalone harness transcribing all three implementations — the NeoForge 1.21.1 reference, the
+   Forge 1.20.1 branch, and this one — run over the full cross product of every vanilla food's
+   `(nutrition, saturationModifier)` pair plus a sweep of nutrition 0–20 × modifier 0.00–2.00 in 0.05
+   steps and the clamp corners; 0–4 seasonings; and every starting hunger state (food 0–20 ×
+   saturation 0–food in 0.5 steps):
 
-**1,962,450 cases compared: 0 food-level mismatches, 0 saturation mismatches.** The largest saturation
-divergence anywhere in the matrix was `3.8e-6`, which is float round-trip noise from the *reference*
-recovering the modifier as `saturation / (2 * nutrition)`; it is roughly a millionth of a saturation
-point and cannot round to a different displayed or mechanical value.
+```
+cases compared              : 1947015
+Fabric vs Forge  mismatches : 0   (exact equality required)
+Fabric vs 1.21.1 mismatches : 0   (threshold 1e-4)
+worst saturation delta vs reference: 3.8146973E-6
+```
+
+The 3.8e-6 is float round-trip noise from the *reference* recovering the modifier as
+`saturation / (2 * nutrition)`; roughly a millionth of a saturation point.
 
 This checks the arithmetic exhaustively. It does not replace a human eating a seasoned pork chop on
 both builds — see §11.
@@ -167,8 +170,8 @@ both builds — see §11.
 
 | ✓ | Check | How |
 | --- | --- | --- |
-| ☑ | Boots with only this mod installed | A (dedicated server, clean boot) |
-| ☑ | Boots with Farmer's Delight present; compat recipes appear | A — see below |
+| ☑ | Boots with only this mod installed | A (dev client to main menu; dedicated server through datapack load) |
+| ☐ | Boots with Farmer's Delight present; compat recipes appear `[H]` | H |
 | ☑ | Boots with Farmer's Delight absent; no errors, no recipe-type spam | A |
 | ☐ | Boots alongside Salt: Renewed if it exists for this target; built-in salt disables cleanly `[H]` | H |
 | ☐ | Dedicated server + separate client: no desync on any interaction `[H]` | H |
@@ -176,15 +179,24 @@ both builds — see §11.
 | ☐ | No crash when the cauldron empties on the final interaction `[H]` | H |
 | ☐ | World save/reload preserves seasoned foods and shaker fill levels `[H]` | H |
 
-**Tested with Farmer's Delight 1.20.1-1.3.2, JEI 15.48.0.183 and AppleSkin 2.5.1 present.** The client
-reaches the main menu with zero mixin failures, and the dedicated server loads **9 recipe types** (the 7
-vanilla ones plus `farmersdelight:cooking` and `farmersdelight:cutting`) and 1493 advancements with no
-errors. Decisively, Forge logs `Skipping loading recipe ...` for every conditional recipe whose
-conditions fail, and **zero recipes were skipped** — so both `compat/ground_pepper_cutting` and
-`compat/blanched_peppercorns_cooking_pot` had their `forge:mod_loaded` condition met and were
-registered. Crafting them at an actual cutting board / cooking pot is still untested (§11).
+The server loaded **7 recipe types** and **1275 advancements** — identical counts to the Forge 1.20.1
+branch (vanilla's 1271 advancements plus this mod's 4).
 
-Testing FD in this dev environment needs `libs/` + `fg.deobf`, not `run/mods` — see §11.6.
+### The mixin is genuinely live in the built jar
+
+This is the failure the porting brief singled out: a mixin that works in dev and silently no-ops once
+built. Checked three ways rather than assumed:
+
+- `saltandpepper.mixins.json` declares `"required": true` with `"defaultRequire": 1`, so a target that
+  fails to resolve is a hard crash, not a silent skip. The client reaching the main menu therefore
+  *proves* the injection resolved.
+- The built jar contains **no refmap**, which on this Loom version is correct rather than broken: Loom
+  1.17 remaps the mixin annotations in place at `remapJar` time instead. Disassembling
+  `PlayerEatMixin.class` out of `build/libs/saltandpepper-1.2.1.jar` shows `@Mixin` → `class_1657`,
+  `method = "eat"` → `method_18866`, and the descriptors → `class_1937`/`class_1799`.
+- `method_18866` was confirmed against the intermediary jar to be
+  `class_1657.method_18866(class_1937, class_1799) → class_1799`, i.e. exactly
+  `Player.eat(Level, ItemStack)`.
 
 ## 9. Cross-port consistency
 
@@ -194,75 +206,56 @@ Testing FD in this dev environment needs `libs/` + `fg.deobf`, not `run/mods` �
 | ☐ | A datapack written for the reference build works here unchanged (tag ids stable) `[H]` | H |
 | ☑ | Config keys and defaults match the reference, even if the file format differs | A |
 
-`sync-shared.sh` does not exist in `port-kit/` on any branch, so it could not be run. The equivalent was
-done with `git diff` against the reference: `textures/`, `lang/`, `models/` and `blockstates/` are
-unchanged. Tag **ids** are stable, but see the `#saltandpepper:seasonable` deviation in §10 before
-relying on the datapack line.
+`sync-shared.sh` does not exist in `port-kit/` on any branch. The equivalent was done with `git diff`:
+`assets/` is unchanged. Tag **ids this mod owns** are stable; the third-party convention tags it
+*references* are loader-specific — see §10.
 
 ## 10. Deviation log
 
 | Deviation | Reason | Permanent? | Player-visible? |
 | --- | --- | --- | --- |
-| **Seasoned food tooltips, AppleSkin and JEI show the food's *unseasoned* hunger/saturation values.** The actual restoration on eating is correct and identical to the reference. | 1.20.1 has no data components, so a food's `FoodProperties` cannot be rewritten per stack. The bonus is applied after the fact from `LivingEntityUseItemEvent.Finish` instead. Anything that reads `Item.getFoodProperties()` to *display* a number therefore reads the base food. | Yes, on this branch | Yes — display only, not mechanics |
-| Seasoning list and shaker charge stored in stack NBT rather than data components | Data components are 1.20.5+. Same logical content, same ordering, same key names. | Yes, on this branch | No, unless inspecting NBT |
-| `#c:foods` gate dropped from `isSeasonableFood` | `#c:foods` is a 1.20.2+ convention with no 1.20.1 equivalent. Eligibility now rests on the existing code check (`stack.isEdible()` and not in `#saltandpepper:seasoning_blacklist`). | Yes, on this branch | No — same set of foods is seasonable |
-| `#saltandpepper:seasonable` is declared but empty and is no longer consulted | Kept so datapack authors targeting the reference still find the tag id, but with the `#c:foods` gate gone there is nothing for it to intersect with. Adding items to it has no effect on this branch. | Yes, on this branch | No |
-| Farmer's Delight cutting recipe uses `forge:tools/knives`, not `c:tools/knife` | That is the tag Farmer's Delight 1.20.1 actually ships. | Yes, on this branch | No |
-| Mod-loaded conditions use Forge's pre-codec `forge:conditional` wrapper | 1.20.1 Forge has no inline `conditions` field on recipes; the wrapper is structurally different, not a rename. Verified against the shipped `ConditionalRecipe$Serializer`, which reads exactly `recipes` / `conditions` / `recipe`. | Yes, on this branch | No |
-| Ore loot `match_tool` predicate rewritten to the flat 1.20.1 `enchantments` form | 1.21's nested `predicates`/`minecraft:enchantments` form does not parse on 1.20.1. | Yes, on this branch | No — same drops intended |
-| Advancement icons rewritten `{"count","id"}` → `{"item"}`, and item predicates `"items": "x"` → `"items": ["x"]` | 1.20.1 advancement codecs. The reference's form silently fails to parse with *"Unsupported icon type"*. | Yes, on this branch | No |
-| `#forge:is_jungle` used where the reference uses `#c:is_jungle` | Forge's `Tags.Biomes` on 1.20.1 has no `IS_JUNGLE` constant, so the tag is referenced by id. | Yes, on this branch | No |
+| **Seasoned food tooltips, AppleSkin and JEI show the food's *unseasoned* hunger/saturation values.** The actual restoration on eating is correct and identical to the reference. | Carried forward from the Forge 1.20.1 branch, and for the same reason: 1.20.1 has no data components, so a food's `FoodProperties` cannot be rewritten per stack. The bonus is applied after the fact instead. Anything that reads `Item.getFoodProperties()` to *display* a number therefore reads the base food. | Yes, on this branch | Yes — display only, not mechanics |
+| The bonus is applied by a mixin on `Player.eat` rather than an event | Fabric API 0.92.11 has no finish-using-item event; `UseItemCallback` fires at use *start* and `ServerLivingEntityEvents` carries only damage/death/conversion. Every module was enumerated from the shipped jar before concluding this. | Yes, on this branch | No |
+| Seasoning list and shaker charge stored in stack NBT rather than data components | Inherited from the Forge 1.20.1 branch. Same content, same ordering, same key names. | Yes, on this branch | No, unless inspecting NBT |
+| Base food values read from `Item.getFoodProperties()`, not a per-stack override | The Forge branch used Forge's per-stack `ItemStack.getFoodProperties(entity)`. Fabric API 0.92.11 has no such API, and vanilla's own `FoodData.eat(Item, ItemStack)` reads the item-level properties — so this is what the delta *must* read to line up with what vanilla just applied. | Yes, on this branch | No for vanilla and Fabric mods; a Forge mod's per-stack food override has no Fabric equivalent to differ from |
+| Creative tab is appended after the vanilla tabs instead of sitting before Spawn Eggs | `withTabsBefore` is a NeoForge addition to `CreativeModeTab.Builder`. Fabric appends custom groups. Contents and order within the tab are unchanged. | Yes, on this branch | Yes — tab position only |
+| Vine growth no longer fires crop-growth hooks | `ForgeHooks.onCropsGrowPre/Post` let other mods veto or observe growth; Fabric has no equivalent. Growth is now unconditional, exactly as vanilla `CocoaBlock`. | Yes, on this branch | No, unless another mod tried to alter crop growth |
+| Convention biome tags are `c:jungle` / `c:beach` / `c:ocean` | Fabric API 0.92.11 ships `ConventionalBiomeTags` **v1**, whose constants are `JUNGLE`/`BEACH`/`OCEAN`. The 1.21.1 Fabric branch uses the v2 `IS_JUNGLE`/`IS_BEACH`/`IS_OCEAN` (`c:is_jungle` …), and the Forge branch used `forge:is_*`. Each is that loader-and-version's spelling of the same idea. | Yes, on this branch | No |
+| Farmer's Delight knife tag is `c:tools/knife` | Mirrors the Fabric 1.21.1 branch. **Unverified for 1.20.1** — see §11. | Unknown | Possibly, if wrong |
+| `pack.mcmeta` removed | Fabric Loader synthesises pack metadata from `fabric.mod.json`; the reference Fabric branch ships none either. | Yes, on this branch | No |
+
+Resource conditions were expected to be a deviation and turned out not to be: see §11.4.
 
 ## 11. Known-unverified
 
-Everything below is unchecked above and is listed here rather than silently ticked.
-
-1. **All in-game interaction (`[H]`) is untested.** No human play session was run on this port. This
-   covers the whole of §7, most of §3, and the interactive half of §6 and §8. The dedicated server
-   boots and loads every recipe and advancement, but nothing was clicked, eaten, grown or harvested.
-2. **No seeded side-by-side worldgen comparison (`[C]`) was run** — §4 ore density, §5 vine frequency
-   and §3 vine stage rendering. The placed/configured features are byte-identical to the reference and
-   only the biome modifiers were rewritten, so the expectation is parity, but that is an argument, not
-   a measurement.
-3. **Farmer's Delight compat is verified as far as recipe *registration*, not as far as *crafting*.**
-   FD 1.20.1-1.3.2 is now installed in the dev environment (§8), both compat recipes pass their
-   conditions and register, and nothing errors. What has not been done is putting black peppercorns on
-   a cutting board with a knife, or green peppercorns in a cooking pot, and confirming the outputs.
-   That is the highest-value remaining test.
-4. **Salt: Renewed was not installed during testing.** The `enableSalt` / `forge:not mod_loaded`
-   disable path is unexercised.
-5. **Client-side rendering is untested** — shaker fill bar, tooltip line, vine stage models, creative
-   tab ordering. Only `runServer` was executed.
-6. **The seasoning numeric parity in §6 is a harness result, not an in-game measurement.** It compares
-   the two implementations exhaustively and they agree, but both were transcribed by the same agent
-   that wrote the port; an independent in-game check on both builds would be stronger.
-
-### Note: how to add test mods to this dev environment
-
-Do **not** drop released mod jars into `run/mods`. A released jar is compiled against SRG names
-(`m_61090_`, `m_7216_`, …) while this dev run is mapped with Parchment on top of official names
-(`defaultBlockState`, `getDispenseMethod`, …). Such a jar fails to load — first its mixins cannot find
-their targets, and had they applied, every Minecraft call inside the mod would throw
-`NoSuchMethodError`.
-
-Put the jar in `libs/` instead and let ForgeGradle remap it:
-
-```groovy
-repositories { flatDir { dir "${projectDir}/libs" } }
-dependencies { runtimeOnly fg.deobf("libs:<name>:<version>") }   // matches libs/<name>-<version>.jar
-```
-
-`fg.deobf(files('libs/x.jar'))` looks like it should work but does **not** — ForgeGradle can only
-deobfuscate artifacts that resolve through a repository, so a bare file dependency is silently passed
-through un-remapped and fails identically to `run/mods`. The `flatDir` repo exists purely to give the
-local jars coordinates; nothing is downloaded.
-
-The two `mixin.env.*` properties in the `runs` block are also required, so that Mixin reverses each
-mod's refmap back from SRG to the dev mappings.
+1. **All in-game interaction (`[H]`) is untested.** No human play session was run. This covers all of
+   §7, most of §3, and the interactive half of §6 and §8. The client reaches the main menu and the
+   server loads every recipe and advancement, but nothing was clicked, eaten, grown or harvested.
+2. **No seeded side-by-side worldgen comparison (`[C]`).** The placed/configured features are
+   byte-identical and the biome selectors mirror the old JSON, but the rewrite from datapack modifiers
+   to the Biome API is the single largest untested behavioural change on this branch. It deserves the
+   first look.
+3. **The Farmer's Delight knife tag is a guess.** `c:tools/knife` is copied from the Fabric 1.21.1
+   branch; I could not verify what Farmer's Delight Refabricated uses on **1.20.1** specifically
+   without the jar. If cutting-board recipes do not appear with FD installed, this is the first thing
+   to check. The Forge branch used `forge:tools/knives`, which was verified.
+4. **Resource conditions were expected to differ and do not.** The porting brief warned the 1.20.1
+   Fabric condition format differs from newer versions. Measured against the shipped 0.92.11 jar, the
+   top-level key is `fabric:load_conditions` and the ids are `fabric:all_mods_loaded` / `fabric:not`
+   with `value`/`values` members — the same as the 1.21.1 branch uses. Flagging the contradiction
+   rather than quietly trusting either source. The conditions have not been observed *firing* in-game.
+5. **Farmer's Delight and Salt: Renewed were not installed during testing.**
+6. **Interrupted / offhand / creative eating is argued, not observed.** The mixin targets
+   `Player.eat`, which is reached only on completed consumption and receives the stack as a parameter,
+   so all three should fall out for free — but no one has actually released right-click mid-bite,
+   eaten from the offhand, or eaten in creative on this build.
+7. **A benign dev-only warning** appears at client start: `Class path entries reference missing files:
+   build\resources\client`. It is the split client source set having no resources directory of its own,
+   and it does not affect loading or the built jar.
 
 ## 12. Sign-off
 
 - [x] Every line above is either checked, or left unchecked with an entry in §11
 - [x] Deviation log is complete
 - [ ] PARITY.md committed on this branch
-- [ ] Release tagged `v1.2.1+forge-1.20.1`
+- [ ] Release tagged `v1.2.1+fabric-1.20.1`

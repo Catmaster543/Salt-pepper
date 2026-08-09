@@ -1,35 +1,29 @@
 {
-  "type": "forge:conditional",
-  "recipes": [
+  "fabric:load_conditions": [
     {
-      "conditions": [
-        {
-          "type": "forge:not",
-          "value": {
-            "type": "forge:mod_loaded",
-            "modid": "salt"
-          }
-        }
-      ],
-      "recipe":
-        {
-          "type": "minecraft:crafting_shaped",
-          "category": "building",
-          "pattern": [
-            "SSS",
-            "SSS",
-            "SSS"
-          ],
-          "key": {
-            "S": {
-              "item": "saltandpepper:salt"
-            }
-          },
-          "result": {
-            "item": "saltandpepper:salt_block",
-            "count": 1
-          }
-        }
+      "condition": "fabric:not",
+      "value": {
+        "condition": "fabric:all_mods_loaded",
+        "values": [
+          "salt"
+        ]
+      }
     }
-  ]
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "SSS",
+    "SSS",
+    "SSS"
+  ],
+  "key": {
+    "S": {
+      "item": "saltandpepper:salt"
+    }
+  },
+  "result": {
+    "item": "saltandpepper:salt_block",
+    "count": 1
+  }
 }

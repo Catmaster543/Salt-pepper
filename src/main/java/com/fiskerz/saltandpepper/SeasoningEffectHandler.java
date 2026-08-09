@@ -8,9 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.world.level.Level;
 
 /**
  * Applies the seasoning bonus at the moment a seasoned food is eaten.
@@ -19,15 +17,20 @@ import net.minecraftforge.fml.common.Mod;
  *
  * <p>On 1.21.1 seasoning rewrites the {@code minecraft:food} data component of the individual stack,
  * so vanilla's own eating code restores the boosted amounts. Neither half of that is available on
- * 1.20.1: there are no data components, and {@code FoodProperties} is attached to the
- * {@code Item}, not the {@code ItemStack}. Changing it would change every stack of that food in the
- * game, seasoned or not.
+ * 1.20.1: there are no data components, and {@code FoodProperties} is attached to the {@code Item},
+ * not the {@code ItemStack}. Changing it would change every stack of that food in the game, seasoned
+ * or not.
  *
  * <p>So the bonus is applied after the fact instead. Vanilla has already run
- * {@code FoodData.eat(nutrition, saturationModifier)} for the base food by the time this fires; this
- * handler adds the difference between the seasoned and unseasoned values.
+ * {@code FoodData.eat(item, stack)} for the base food by the time this is called; this adds the
+ * difference between the seasoned and unseasoned values.
  *
- * <h2>Matching the 1.21.1 numbers exactly</h2>
+ * <p>This class holds no loader API of its own. On Forge it was driven by
+ * {@code LivingEntityUseItemEvent.Finish}; here {@code PlayerEatMixin} calls it, because Fabric API
+ * 0.92.11 exposes no finish-using-item event. The arithmetic below is byte-for-byte the same on both
+ * branches, which is what keeps the two numerically identical.
+ *
+ * <h2>Matching the numbers exactly</h2>
  *
  * <p>1.21.1 computes, with {@code n}/{@code m} the base nutrition and saturation modifier:
  * <pre>
@@ -39,16 +42,15 @@ import net.minecraftforge.fml.common.Mod;
  * {@code foodLevel = clamp(foodLevel + n', 0, 20); saturation = min(saturation + s', foodLevel)}.
  *
  * <p>Here vanilla has already applied {@code (n, n*m*2)}, so this adds the deltas
- * {@code (n' - n, n'*m'*2 - n*m*2)} through the same two clamps, in the same order - nutrition
- * first, because the saturation ceiling is the food level. Applying the clamp twice against the same
- * ceiling is equivalent to applying it once against the total, since the deltas are non-negative:
+ * {@code (n' - n, n'*m'*2 - n*m*2)} through the same two clamps, in the same order - nutrition first,
+ * because the saturation ceiling is the food level. Applying the clamp twice against the same ceiling
+ * is equivalent to applying it once against the total, since the deltas are non-negative:
  * {@code min(min(a, c) + d, c) == min(a + d, c)} for {@code d >= 0}.
  *
  * <p>One subtlety mirrored deliberately: 1.21.1 recovers the base modifier from the stored absolute
- * saturation as {@code n <= 0 ? 0 : s / (2n)}. 1.20.1 stores the modifier directly, but the same
- * guard is applied so a zero-nutrition food behaves identically on both.
+ * saturation as {@code n <= 0 ? 0 : s / (2n)}. 1.20.1 stores the modifier directly, but the same guard
+ * is applied so a zero-nutrition food behaves identically on both.
  */
-@Mod.EventBusSubscriber(modid = SaltandPepper.MODID)
 public final class SeasoningEffectHandler {
     private SeasoningEffectHandler() {}
 
@@ -57,20 +59,29 @@ public final class SeasoningEffectHandler {
     /** Vanilla's cap on a saturation modifier, matching the 1.21.1 clamp. */
     private static final float MAX_SATURATION_MODIFIER = 2.0F;
 
-    @SubscribeEvent
-    public static void onUseItemFinish(LivingEntityUseItemEvent.Finish event) {
-        if (!(event.getEntity() instanceof Player player) || player.level().isClientSide) {
+    /**
+     * Called from {@link com.fiskerz.saltandpepper.mixin.PlayerEatMixin} at the return of
+     * {@code Player.eat}, i.e. once consumption has actually completed and vanilla has already applied
+     * the unseasoned food.
+     *
+     * @param eaten the stack that was consumed; it has been shrunk by one already, but its NBT - and
+     *              therefore its seasoning list - is intact
+     */
+    public static void applyOnEaten(Player player, Level level, ItemStack eaten) {
+        if (level.isClientSide) {
             return;
         }
 
-        // getItem() is the stack as it was when consumption started - the seasoned one.
-        ItemStack eaten = event.getItem();
         List<ResourceLocation> seasonings = SeasoningHelper.getSeasonings(eaten);
         if (seasonings.isEmpty()) {
             return;
         }
 
-        FoodProperties food = eaten.getFoodProperties(player);
+        // Deliberately the item's own food properties rather than any per-stack override: this must
+        // read whatever vanilla's FoodData.eat(Item, ItemStack) read a few instructions ago, or the
+        // delta would not line up. On 1.20.1 that is Item.getFoodProperties(). Fabric API 0.92.11 has
+        // no per-stack food API for this to disagree with.
+        FoodProperties food = eaten.getItem().getFoodProperties();
         if (food == null) {
             return;
         }

@@ -1,6 +1,8 @@
 package com.fiskerz.saltandpepper;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
+
+import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBiomeTags;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -55,14 +57,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class PepperVineBlock extends HorizontalDirectionalBlock implements BonemealableBlock {
     public static final int MAX_AGE = 2;
     public static final IntegerProperty AGE = BlockStateProperties.AGE_2;
-
-    /**
-     * Forge's common biome tags on 1.20.1 live in the {@code forge:} namespace and include no jungle
-     * entry, so the modded-jungle half of the 1.21.1 check ({@code #c:is_jungle}) is expressed
-     * directly as {@code #forge:is_jungle} - the 1.20.1 convention for the same idea.
-     */
-    private static final TagKey<Biome> FORGE_IS_JUNGLE =
-            TagKey.create(Registries.BIOME, new ResourceLocation("forge", "is_jungle"));
 
     // Verbatim from CocoaBlock so the pods sit on the log face exactly like vanilla cocoa.
     protected static final VoxelShape[] EAST_AABB = new VoxelShape[] {
@@ -154,16 +148,22 @@ public class PepperVineBlock extends HorizontalDirectionalBlock implements Bonem
         if (Config.RESTRICT_GROWTH_TO_JUNGLE.get() && !isJungle(level, pos)) {
             return;
         }
-        // Same 1-in-5 pacing as cocoa.
-        if (net.minecraftforge.common.ForgeHooks.onCropsGrowPre(level, pos, state, random.nextInt(5) == 0)) {
+        // Same 1-in-5 pacing as cocoa. The Forge branch wrapped this in ForgeHooks.onCropsGrowPre/Post
+        // so other mods could veto or observe the growth; Fabric has no equivalent hook, so the growth
+        // is unconditional here, exactly as vanilla CocoaBlock does it.
+        if (random.nextInt(5) == 0) {
             level.setBlock(pos, state.setValue(AGE, age + 1), Block.UPDATE_CLIENTS);
-            net.minecraftforge.common.ForgeHooks.onCropsGrowPost(level, pos, state);
         }
     }
 
+    /**
+     * Vanilla's jungle tag plus the loader's convention tag, so modded jungle analogues count too.
+     * On Fabric API 0.92.11 the convention tags are the <em>v1</em> set, where the constant is
+     * {@code JUNGLE} ({@code #c:jungle}) rather than 1.21.1's v2 {@code IS_JUNGLE} ({@code #c:is_jungle}).
+     */
     private static boolean isJungle(LevelReader level, BlockPos pos) {
         var biome = level.getBiome(pos);
-        return biome.is(BiomeTags.IS_JUNGLE) || biome.is(FORGE_IS_JUNGLE);
+        return biome.is(BiomeTags.IS_JUNGLE) || biome.is(ConventionalBiomeTags.JUNGLE);
     }
 
     @Override
@@ -195,7 +195,7 @@ public class PepperVineBlock extends HorizontalDirectionalBlock implements Bonem
         }
 
         if (!level.isClientSide) {
-            popResource(level, pos, new ItemStack(ModItems.GREEN_PEPPERCORNS.get(), 2 + level.random.nextInt(2)));
+            popResource(level, pos, new ItemStack(ModItems.GREEN_PEPPERCORNS, 2 + level.random.nextInt(2)));
             BlockState reset = state.setValue(AGE, 0);
             level.setBlock(pos, reset, Block.UPDATE_CLIENTS);
             level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, reset));

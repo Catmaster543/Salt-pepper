@@ -3,22 +3,35 @@ package com.fiskerz.saltandpepper;
 import java.util.List;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.ChatFormatting;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 
 /**
@@ -82,11 +95,11 @@ public class ShakerItem extends Item {
         if (seasoning.isEmpty() || !SeasoningHelper.isSeasoning(seasoning)) {
             return null;
         }
-        if (seasoning.is(ModItems.SALT.get())) {
-            return ModItems.SALT_SHAKER.get();
+        if (seasoning.is(ModItems.SALT)) {
+            return ModItems.SALT_SHAKER;
         }
-        if (seasoning.is(ModItems.GROUND_PEPPER.get())) {
-            return ModItems.PEPPER_SHAKER.get();
+        if (seasoning.is(ModItems.GROUND_PEPPER)) {
+            return ModItems.PEPPER_SHAKER;
         }
         return null;
     }
@@ -216,13 +229,13 @@ public class ShakerItem extends Item {
     }
 
     private ResourceLocation seasoningId() {
-        return ForgeRegistries.ITEMS.getKey(this.seasoning.get());
+        return BuiltInRegistries.ITEM.getKey(this.seasoning.get());
     }
 
     /** Spends uses on the cursor-held shaker, leaving an empty shaker behind at zero. */
     private static void setCarriedUses(Player player, ItemStack shaker, int uses) {
         if (uses <= 0) {
-            player.containerMenu.setCarried(new ItemStack(ModItems.EMPTY_SHAKER.get()));
+            player.containerMenu.setCarried(new ItemStack(ModItems.EMPTY_SHAKER));
         } else {
             SeasoningNbt.setShakerUses(shaker, uses);
         }
@@ -231,7 +244,7 @@ public class ShakerItem extends Item {
     /** Spends uses on a shaker sitting in a slot, leaving an empty shaker behind at zero. */
     private static void setSlotUses(Slot slot, ItemStack shaker, int uses) {
         if (uses <= 0) {
-            slot.setByPlayer(new ItemStack(ModItems.EMPTY_SHAKER.get()));
+            slot.setByPlayer(new ItemStack(ModItems.EMPTY_SHAKER));
         } else {
             SeasoningNbt.setShakerUses(shaker, uses);
             slot.setChanged();

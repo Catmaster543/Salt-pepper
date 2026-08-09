@@ -1,14 +1,14 @@
 package com.fiskerz.saltandpepper;
 
-import net.minecraftforge.fml.ModList;
+import net.fabricmc.loader.api.FabricLoader;
 
 /**
  * Runtime guard against <a href="https://modrinth.com/mod/salt">Salt: Renewed</a> (mod id {@code salt}).
  *
  * <p>When that mod is present our salt content stands down completely: worldgen is skipped, the items
  * are hidden from the creative tab, and the ore/refining recipes drop out via a
- * {@code forge:not(forge:mod_loaded)} condition. Their salt is added to
- * {@code #saltandpepper:seasonings} by a conditional tag file so it drives our seasoning system instead.
+ * {@code fabric:not(fabric:all_mods_loaded)} resource condition. Their salt is added to
+ * {@code #saltandpepper:seasonings} by an optional tag entry so it drives our seasoning system instead.
  *
  * <p>Registry entries cannot be conditional, so the items and blocks are always registered - only
  * visibility, worldgen and recipes are gated.
@@ -25,22 +25,16 @@ public final class SaltCompat {
     public static boolean isSaltRenewedLoaded() {
         Boolean cached = loaded;
         if (cached == null) {
-            ModList modList = ModList.get();
-            // ModList is null very early during startup; do not cache that non-answer.
-            if (modList == null) {
-                return false;
-            }
-            cached = modList.isLoaded(SALT_RENEWED_MODID);
+            cached = FabricLoader.getInstance().isModLoaded(SALT_RENEWED_MODID);
             loaded = cached;
         }
         return cached;
     }
 
     /**
-     * Logs the single INFO line explaining the automatic shutdown. Called once from common setup.
+     * Logs the single INFO line explaining the automatic shutdown. Called once from mod initialisation.
      *
-     * <p>The config value itself is deliberately left untouched rather than force-written: writing to a
-     * {@code ModConfigSpec} value during startup can race with config loading, and
+     * <p>The config value itself is deliberately left untouched rather than force-written, because
      * {@link Config#saltEnabled()} already folds this check in for every consumer.
      */
     public static void logIfDisabled() {

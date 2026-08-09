@@ -3,9 +3,10 @@ package com.fiskerz.saltandpepper;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * The single source of truth for what may be seasoned and what seasoning records on a stack.
@@ -63,7 +64,7 @@ public final class SeasoningHelper {
 
     /** The registry id used to identify a seasoning on a seasoned food. */
     public static ResourceLocation seasoningId(ItemStack seasoning) {
-        return ForgeRegistries.ITEMS.getKey(seasoning.getItem());
+        return BuiltInRegistries.ITEM.getKey(seasoning.getItem());
     }
 
     /** The seasonings already applied to a stack, in application order. */

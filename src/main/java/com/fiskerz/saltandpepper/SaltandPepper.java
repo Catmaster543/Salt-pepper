@@ -1,40 +1,38 @@
 package com.fiskerz.saltandpepper;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.mojang.logging.LogUtils;
+import net.fabricmc.api.ModInitializer;
+import net.minecraft.resources.ResourceLocation;
 
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-
-@Mod(SaltandPepper.MODID)
-public class SaltandPepper {
+public class SaltandPepper implements ModInitializer {
     public static final String MODID = "saltandpepper";
-    public static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
 
-    public SaltandPepper() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        modEventBus.addListener(this::commonSetup);
+    @Override
+    public void onInitialize() {
+        // Config first: creative tab building and worldgen both read it.
+        Config.load();
 
-        ModBlocks.BLOCKS.register(modEventBus);
-        ModItems.ITEMS.register(modEventBus);
-        ModRecipes.RECIPE_SERIALIZERS.register(modEventBus);
-        ModWorldgen.FEATURES.register(modEventBus);
-        ModWorldgen.PLACEMENT_MODIFIER_TYPES.register(modEventBus);
-        ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
+        // Registration is done in static initialisers, so these calls exist to force class loading in a
+        // deterministic order. Blocks before items, because the block items reference their block.
+        ModBlocks.init();
+        ModItems.init();
+        // No ModDataComponents.init() here: data components arrived in 1.20.5, so on 1.20.1 the
+        // per-stack seasoning list and shaker charge live in stack NBT instead - see SeasoningNbt,
+        // which is static-only and needs no registration.
+        ModRecipes.init();
+        ModWorldgen.init();
+        ModCreativeTabs.init();
 
-        // Forge event bus handlers that are not @Mod.EventBusSubscriber-annotated would go here.
-        MinecraftForge.EVENT_BUS.register(this);
+        ModBiomeModifications.register();
+        CauldronBlanchingHandler.register();
 
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        SaltCompat.logIfDisabled();
     }
 
-    private void commonSetup(FMLCommonSetupEvent event) {
-        event.enqueueWork(SaltCompat::logIfDisabled);
+    public static ResourceLocation id(String path) {
+        return new ResourceLocation(MODID, path);
     }
 }

@@ -1,20 +1,13 @@
 pluginManagement {
     repositories {
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        mavenCentral()
         gradlePluginPortal()
-        maven {
-            name = 'MinecraftForge'
-            url = 'https://maven.minecraftforge.net/'
-        }
-        maven {
-            // Required for the ParchmentMC Librarian plugin, which registers the "parchment"
-            // mapping channel with ForgeGradle. Without it ForgeGradle reports
-            // "Unknown mapping provider: parchment".
-            name = 'ParchmentMC'
-            url = 'https://maven.parchmentmc.org'
-        }
     }
 }
 
-plugins {
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.7.0'
-}
+// Should match your modid
+rootProject.name = 'saltandpepper'
