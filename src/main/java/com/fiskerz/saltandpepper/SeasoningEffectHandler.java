@@ -60,12 +60,14 @@ public final class SeasoningEffectHandler {
     private static final float MAX_SATURATION_MODIFIER = 2.0F;
 
     /**
-     * Called from {@link com.fiskerz.saltandpepper.mixin.PlayerEatMixin} at the return of
-     * {@code Player.eat}, i.e. once consumption has actually completed and vanilla has already applied
-     * the unseasoned food.
+     * Called from {@link com.fiskerz.saltandpepper.mixin.PlayerEatMixin}, immediately after vanilla's
+     * {@code FoodData.eat(item, stack)} inside {@code Player.eat} - so consumption has completed and
+     * the unseasoned food has already been applied, leaving this to add the difference.
      *
-     * @param eaten the stack that was consumed; it has been shrunk by one already, but its NBT - and
-     *              therefore its seasoning list - is intact
+     * @param eaten the stack that was consumed, still at its pre-shrink count. That matters: this
+     *              method needs {@code eaten.getItem()}, and on 1.20.1 that getter answers
+     *              {@code Items.AIR} once the stack is empty. See the note in the mixin about why the
+     *              injection cannot simply sit at the end of the method.
      */
     public static void applyOnEaten(Player player, Level level, ItemStack eaten) {
         if (level.isClientSide) {

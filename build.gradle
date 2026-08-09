@@ -52,8 +52,11 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    // 1.20.1 runs on Java 17, unlike the 1.21.1 branches which are on 21.
-    it.options.release = 21
+    // 1.20.1 runs on Java 17, unlike the 1.21.1 branches which are on 21. This governs the bytecode
+    // level of the shipped jar: raising it to 21 produces class files that a player on Java 17 - the
+    // normal runtime for 1.20.1 - cannot load at all. It is NOT the knob for "Loom wants Java 21";
+    // that is the Gradle daemon's JVM, set in gradle/gradle-daemon-jvm.properties.
+    it.options.release = 17
     it.options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
 
@@ -67,7 +70,7 @@ java {
     //   - Minecraft 1.20.1 targets Java 17, so compilation and the dev runs must use 17.
     // A toolchain expresses exactly that: the daemon can be 21/25 while javac and runClient are 17.
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 

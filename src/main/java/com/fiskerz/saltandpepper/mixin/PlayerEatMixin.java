@@ -37,15 +37,32 @@ import net.minecraft.world.level.Level;
  *   <li><b>Creative</b> - vanilla still routes through here; only the stack shrink is skipped.</li>
  * </ul>
  *
- * <p>Injecting at {@code RETURN} matters. The first thing {@code Player.eat} does is
- * {@code getFoodData().eat(item, stack)}, so by the time this fires vanilla has already applied the
- * base food and the handler can add the difference. The stack has also been shrunk by then, possibly
- * to zero, but {@code ItemStack.getTag()} on 1.20.1 returns the tag regardless of count, so the
- * seasoning NBT is still readable.
+ * <h2>Why the injection point is this precise</h2>
+ *
+ * <p>It has to sit in the window <em>after</em> {@code getFoodData().eat(item, stack)} - the handler
+ * adds the difference between the seasoned and unseasoned values, so vanilla must already have
+ * applied the base food, and the two clamps have to happen in that order - but <em>before</em>
+ * {@code super.eat(...)} shrinks the stack.
+ *
+ * <p>{@code RETURN} looks like it would work and does not. By then {@code shrink(1)} has run, and
+ * when the eaten stack held a single item - the normal case, since seasoning a food by crafting
+ * yields exactly one - the count reaches zero and {@code ItemStack.getItem()} answers
+ * {@code Items.AIR}, because 1.20.1 guards that getter with an {@code isEmpty()} check. The food
+ * properties then come back null and the bonus is silently skipped. ({@code getTag()} carries no such
+ * guard, so the seasoning NBT reads back fine - which is what makes the failure look so puzzling.)
+ *
+ * <p>Anchoring to the {@code FoodData.eat} call instead lands between the two, where the stack is
+ * still intact. The Forge branch avoids the whole issue because its event hands back a copy of the
+ * stack taken before consumption.
  */
 @Mixin(Player.class)
 public abstract class PlayerEatMixin {
-    @Inject(method = "eat", at = @At("RETURN"))
+    @Inject(
+            method = "eat",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/food/FoodData;eat(Lnet/minecraft/world/item/Item;Lnet/minecraft/world/item/ItemStack;)V",
+                    shift = At.Shift.AFTER))
     private void saltandpepper$applySeasoningBonus(Level level, ItemStack food, CallbackInfoReturnable<ItemStack> cir) {
         SeasoningEffectHandler.applyOnEaten((Player) (Object) this, level, food);
     }
