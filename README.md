@@ -29,6 +29,9 @@ Once boiled you get blanched peppercorns. Similar to the salt you now need to pu
 And lastly you need to break them down into fine powder, which you can do with the power of your own fist (your inventory crafting).
 With the pepper broken down you can use it directly in your crafting grid to flavor any food, or put in a shaker and fill it up by 8 again.
 
+**Want to know something a bit deeper?**
+Check out the [wiki](https://github.com/Catmaster543/Salt-pepper/wiki)!
+
 ***
 
 ## **Versions**
