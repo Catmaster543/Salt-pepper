@@ -8,6 +8,8 @@ I have published the mod to [Curseforge](https://www.curseforge.com/minecraft/mc
 
 ***
 
+# Features:
+
 ## **Shakers**
 
 You can make an empty shaker with an iron nugget and glass. You can then fill up the shaker with either; salt, or pepper. With each refill you add extra 8 uses to the shaker, with a maximum of 64, meaning you can season a whole stack of food at once. To use the filled shaker, you just pick it up in your inventory and right click any food item to season it.
